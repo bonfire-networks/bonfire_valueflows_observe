@@ -1,9 +1,10 @@
-# Bonfire:Quantify
+# Bonfire:ValueFlows:Observe
 
-An extension for [Bonfire](https://bonfire.cafe/) that handles:
+An extension for [ValueFlows](https://valueflo.ws/) [Bonfire](https://bonfire.cafe/) that handles:
 
-- Units
-- Measures
+- Observations
+    - with measurements
+    - with other phenomena
 
 ## Handy commands
 
