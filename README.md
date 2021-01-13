@@ -1,6 +1,6 @@
 # Bonfire:ValueFlows:Observe
 
-An extension for [ValueFlows](https://valueflo.ws/) [Bonfire](https://bonfire.cafe/) that handles:
+An extension for [ValueFlows](https://valueflo.ws/) on [Bonfire](https://bonfire.cafe/) that handles:
 
 - Observations
     - with measurements
@@ -10,7 +10,7 @@ An extension for [ValueFlows](https://valueflo.ws/) [Bonfire](https://bonfire.ca
 
 ## Copyright and License
 
-Copyright (c) 2020 Bonfire, VoxPublica, and CommonsPub Contributors
+Copyright (c) 2020 Bonfire and ValueFlows Contributors
 
 This program is free software: you can redistribute it and/or modify
 it under the terms of the GNU Affero General Public License as
