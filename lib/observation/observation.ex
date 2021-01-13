@@ -11,8 +11,8 @@ defmodule ValueFlows.Observe.Observation do
 
   alias ValueFlows.Knowledge.ResourceSpecification
   alias ValueFlows.Observe.Observation
-  alias ValueFlows.Observe.EconomicResource
-  alias ValueFlows.Observe.Process
+  alias ValueFlows.EconomicResource
+  alias ValueFlows.Process
 
   alias Bonfire.Quantify.ObservablePhenomenon
 
@@ -24,22 +24,24 @@ defmodule ValueFlows.Observe.Observation do
     field(:result_time, :utc_datetime_usec)
 
     # agent
-    belongs_to(:provider, Pointers.Pointer)
+    belongs_to(:provider, @user)
 
     # agent or `EconomicResource` or `ResourceSpecification`
     belongs_to(:made_by_sensor, Pointers.Pointer)
+    belongs_to(:made_by_agent, @user, foreign_key: :made_by_sensor_id, define_field: false)
     belongs_to(:made_by_resource, EconomicResource, foreign_key: :made_by_sensor_id, define_field: false)
     belongs_to(:made_by_resource_specification, ResourceSpecification, foreign_key: :made_by_sensor_id, define_field: false)
 
     # EconomicResource or Agent
     belongs_to(:has_feature_of_interest, Pointers.Pointer)
     belongs_to(:has_observed_resource, EconomicResource, foreign_key: :has_feature_of_interest_id, define_field: false)
+    belongs_to(:has_observed_agent, @user, foreign_key: :has_feature_of_interest_id, define_field: false)
 
-    belongs_to(:observed_property, Pointers.Pointer) # TBD
+    belongs_to(:observed_property, Bonfire.Classify.Category) # TBD
 
-    belongs_to(:has_result, Pointers.Pointer) # TBD
-    belongs_to(:has_measure, Measure, on_replace: :nilify, foreign_key: :has_result_id, define_field: false)
-    belongs_to(:has_phenomenon, Bonfire.Classify.Category, on_replace: :nilify, foreign_key: :has_result_id, define_field: false) # TBD (category?)
+    belongs_to(:has_result, Pointers.Pointer)
+    belongs_to(:result_measure, Bonfire.Quantify.Measure, on_replace: :nilify, foreign_key: :has_result_id, define_field: false)
+    belongs_to(:result_phenomenon, Bonfire.Classify.Category, on_replace: :nilify, foreign_key: :has_result_id, define_field: false) # TBD (category with extra JSONB field?)
 
     belongs_to(:observed_during, Process)
 
@@ -65,10 +67,10 @@ defmodule ValueFlows.Observe.Observation do
     timestamps(inserted_at: false)
   end
 
-  @required ~w(has_feature_of_interest_id observed_property_id has_result_id is_public)a
+  @required ~w( has_feature_of_interest_id observed_property_id is_public)a
   @cast @required ++
           ~w(provider_id note is_disabled)a ++
-          ~w(result_time made_by_sensor_id observed_during_id)a ++
+          ~w(has_result_id result_time made_by_sensor_id observed_during_id)a ++
           ~w(at_location_id context_id)a
 
   def create_changeset(
@@ -82,7 +84,7 @@ defmodule ValueFlows.Observe.Observation do
       creator_id: creator.id,
       is_public: true
     )
-    |> change_observable_phenomenons(attrs)
+    |> change_measures(attrs)
     |> common_changeset()
   end
 
@@ -94,20 +96,15 @@ defmodule ValueFlows.Observe.Observation do
   def update_changeset(%Observation{} = event, attrs) do
     event
     |> Changeset.cast(attrs, @cast)
-    |> change_observable_phenomenons(attrs)
+    |> change_measures(attrs)
     |> common_changeset()
   end
 
-  def change_observable_phenomenons(changeset, %{} = attrs) do
-    measures = Map.take(attrs, measure_fields())
-
-    Enum.reduce(measures, changeset, fn {field_name, observable_phenomenon}, c ->
-      Changeset.put_assoc(c, field_name, observable_phenomenon)
-    end)
+  def change_measures(changeset, %{result_measure: %{} = result_measure}) do
+    Changeset.put_assoc(changeset, :result_measure, result_measure)
   end
-
-  def measure_fields do
-    [:observed_measure, :effort_quantity]
+  def change_measures(changeset, _) do
+    changeset
   end
 
   defp common_changeset(changeset) do

@@ -12,7 +12,6 @@ defmodule ValueFlows.Observe.Observations do
   alias ValueFlows.Observe.Observation
   alias ValueFlows.Observe.EconomicResource.EconomicResources
   alias ValueFlows.Observe.Observation.Queries
-  alias ValueFlows.Observe.Observation.EventSideEffects
 
   alias ValueFlows.Observe.Process.Processes
 
@@ -46,7 +45,7 @@ defmodule ValueFlows.Observe.Observations do
   end
 
   @doc """
-  Retrieves an Page of events according to various filters
+  Retrieves an Page of observations according to various filters
 
   Used by:
   * GraphQL resolver single-parent resolution
@@ -64,7 +63,7 @@ defmodule ValueFlows.Observe.Observations do
   end
 
   @doc """
-  Retrieves an Pages of events according to various filters
+  Retrieves an Pages of observations according to various filters
 
   Used by:
   * GraphQL resolver bulk resolution
@@ -91,9 +90,9 @@ defmodule ValueFlows.Observe.Observations do
     )
   end
 
-  def preload_all(%Observation{} = event) do
-    {:ok, event} = one(id: event.id, preload: :all)
-    event
+  def preload_all(%Observation{} = observation) do
+    {:ok, observation} = one(id: observation.id, preload: :all)
+    observation
   end
 
 
@@ -101,54 +100,51 @@ defmodule ValueFlows.Observe.Observations do
 
 
   @doc """
-  Create an Event (with preexisting resources)
+  Create an observation
   """
-  def create(%{} = creator, event_attrs) do
-    new_event_attrs =
-      event_attrs
+  def create(%{} = creator, observation_attrs) do
+    new_observation_attrs =
+      observation_attrs
       # fallback if none indicated
       |> Map.put_new(:provider, creator)
       |> prepare_attrs()
 
-    cs = Observation.create_changeset(creator, new_event_attrs)
+    cs = Observation.create_changeset(creator, new_observation_attrs)
 
     # IO.inspect(creator: creator)
-    # IO.inspect(new_event_attrs: new_event_attrs)
+    # IO.inspect(new_observation_attrs: new_observation_attrs)
 
     repo().transact_with(fn ->
-      with :ok <- validate_user_involvement(creator, new_event_attrs),
-           :ok <- validate_provider_is_primary_accountable(new_event_attrs),
-           {:ok, event} <- repo().insert(cs |> Observation.create_changeset_validate()),
-           {:ok, event} <- ValueFlows.Util.try_tag_thing(creator, event, new_event_attrs),
-           event = preload_all(event),
+      with :ok <- validate_user_involvement(creator, new_observation_attrs),
+           :ok <- validate_provider_is_primary_accountable(new_observation_attrs),
+           {:ok, observation} <- repo().insert(cs |> Observation.create_changeset_validate()),
+           observation = preload_all(observation),
            act_attrs = %{verb: "created", is_local: true},
-           # FIXME
-           {:ok, activity} <- ValueFlows.Util.activity_create(creator, event, act_attrs),
-           :ok <- ValueFlows.Util.publish(creator, event, activity, :created) do
-        indexing_object_format(event) |> ValueFlows.Util.index_for_search()
-        {:ok, event}
+           {:ok, activity} <- ValueFlows.Util.activity_create(creator, observation, act_attrs),
+           :ok <- ValueFlows.Util.publish(creator, observation, activity, :created) do
+        indexing_object_format(observation) |> ValueFlows.Util.index_for_search()
+        {:ok, observation}
       end
     end)
   end
 
-  def create(%{} = creator, %{id: context_id}, event_attrs) do
+  def create(%{} = creator, %{id: context_id}, observation_attrs) do
 
-    create(creator, event_attrs
+    create(creator, observation_attrs
       |> Map.put_new(:context_id, context_id))
   end
 
   # TODO: take the user who is performing the update
   # @spec update(%Observation{}, attrs :: map) :: {:ok, Observation.t()} | {:error, Changeset.t()}
-  def update(user, %Observation{} = event, attrs) do
+  def update(user, %Observation{} = observation, attrs) do
     repo().transact_with(fn ->
-      event = preload_all(event)
+      observation = preload_all(observation)
       attrs = prepare_attrs(attrs)
 
-      with :ok <- validate_user_involvement(user, event),
-           {:ok, event} <- repo().update(Observation.update_changeset(event, attrs)),
-           {:ok, event} <- ValueFlows.Util.try_tag_thing(nil, event, attrs),
-           :ok <- ValueFlows.Util.publish(event, :updated) do
-        {:ok, event}
+      with :ok <- validate_user_involvement(user, observation),
+           {:ok, observation} <- repo().update(Observation.update_changeset(observation, attrs)),
+           :ok <- ValueFlows.Util.publish(observation, :updated) do
+        {:ok, observation}
       end
     end)
   end
@@ -156,7 +152,7 @@ defmodule ValueFlows.Observe.Observations do
 
   defp validate_user_involvement(
          %{id: creator_id},
-         %{provider_id: provider_id} = _event
+         %{provider_id: provider_id} = _observation
        )
        when provider_id == creator_id do
     # TODO add more complex rules once we have agent roles/relationships
@@ -166,18 +162,18 @@ defmodule ValueFlows.Observe.Observations do
 
   defp validate_user_involvement(
          creator,
-         %{provider: provider} = _event
+         %{provider: provider} = _observation
        )
        when provider == creator do
     :ok
   end
 
-  defp validate_user_involvement(_creator, _event) do
+  defp validate_user_involvement(_creator, _observation) do
    {:error, error(403, "You cannot do this if you are not provider.")}
   end
 
   defp validate_provider_is_primary_accountable(
-         %{resource_inventoried_as_id: resource_id, provider_id: provider_id} = _event
+         %{resource_inventoried_as_id: resource_id, provider_id: provider_id} = _observation
        )
        when not is_nil(resource_id) and not is_nil(provider_id) do
     with {:ok, resource} <- EconomicResources.one([:default, id: resource_id]) do
@@ -189,7 +185,7 @@ defmodule ValueFlows.Observe.Observations do
   end
 
   defp validate_provider_is_primary_accountable(
-         %{resource_inventoried_as: resource, provider_id: provider_id} = _event
+         %{resource_inventoried_as: resource, provider_id: provider_id} = _observation
        )
        when is_struct(resource) and not is_nil(provider_id) do
     if is_nil(resource.primary_accountable_id) or provider_id == resource.primary_accountable_id do
@@ -199,7 +195,7 @@ defmodule ValueFlows.Observe.Observations do
     end
   end
 
-  defp validate_provider_is_primary_accountable(_event) do
+  defp validate_provider_is_primary_accountable(_observation) do
     :ok
   end
 
@@ -214,7 +210,7 @@ defmodule ValueFlows.Observe.Observations do
     |> maybe_put(:made_by_sensor_id, attr_get_id(attrs, :made_by_sensor_id))
     |> maybe_put(:has_feature_of_interest_id, attr_get_id(attrs, :has_feature_of_interest))
     |> maybe_put(:observed_property_id, attr_get_id(attrs, :observed_property))
-    |> maybe_put(:has_result_id, attr_get_id(attrs, :has_result))
+    |> maybe_put(:has_result_id, attr_get_id(attrs, :has_result) || attr_get_id(attrs, :result_phenomenon) )
     |> maybe_put(:observed_during_id, attr_get_id(attrs, :observed_during))
     |> maybe_put(:at_location_id, attr_get_id(attrs, :at_location))
     |> parse_measure_attrs()
@@ -222,9 +218,9 @@ defmodule ValueFlows.Observe.Observations do
 
   defp parse_measure_attrs(attrs) do
     Enum.reduce(attrs, %{}, fn {k, v}, acc ->
-      if is_map(v) and Map.has_key?(v, :has_observation) do
-        v = map_key_replace(v, :has_observation, :unit_id)
-        # I have no idea why the numerical value isn't auto converted
+      if is_map(v) and Map.has_key?(v, :has_unit) do
+        v = map_key_replace(v, :has_unit, :unit_id)
+        # no idea why the numerical value isn't auto converted
         Map.put(acc, k, v)
       else
         Map.put(acc, k, v)
@@ -232,11 +228,11 @@ defmodule ValueFlows.Observe.Observations do
     end)
   end
 
-  def soft_delete(%Observation{} = event) do
+  def soft_delete(%Observation{} = observation) do
     repo().transact_with(fn ->
-      with {:ok, event} <- Bonfire.Repo.Delete.soft_delete(event),
-           :ok <- ValueFlows.Util.publish(event, :deleted) do
-        {:ok, event}
+      with {:ok, observation} <- Bonfire.Repo.Delete.soft_delete(observation),
+           :ok <- ValueFlows.Util.publish(observation, :deleted) do
+        {:ok, observation}
       end
     end)
   end

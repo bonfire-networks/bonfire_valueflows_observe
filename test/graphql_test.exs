@@ -3,53 +3,51 @@ defmodule ValueFlows.Observe.GraphQLTest do
   use ValueFlows.Observe.ConnCase, async: true
 
   import Bonfire.Common.Simulation
-  # import CommonsPub.Utils.Simulate
+  import ValueFlows.Observe.Simulate
   import ValueFlows.Observe.Test.Faking
   # import CommonsPub.Utils.Trendy
 
-  import ValueFlows.Observe.Simulate
-  # alias ValueFlows.Observe.Measures
-  alias ValueFlows.Observe.Units
+  alias ValueFlows.Observe.Observations
 
   describe "observation" do
     test "fetches an existing observation by ID" do
       user = fake_user!()
       observation = fake_observation!(user)
 
-      q = unit_query()
+      q = observation_query()
       conn = user_conn(user)
       assert_observation(grumble_post_key(q, conn, :observation, %{id: observation.id}))
     end
 
-    test "fails for deleted units" do
+    test "fails for deleted observations" do
       user = fake_user!()
       observation = fake_observation!(user)
-      assert {:ok, observation} = Units.soft_delete(observation)
+      assert {:ok, observation} = Observations.soft_delete(observation)
 
-      q = unit_query()
+      q = observation_query()
       conn = user_conn(user)
       assert [%{"status" => 404}] = grumble_post_errors(q, conn, %{id: observation.id})
     end
 
     test "fails if ID is missing" do
       user = fake_user!()
-      q = unit_query()
+      q = observation_query()
       conn = user_conn(user)
       vars = %{id: Pointers.ULID.generate()}
       assert [%{"status" => 404}] = grumble_post_errors(q, conn, vars)
     end
   end
 
-  describe "unitsPages" do
-    test "fetches a page of units" do
+  describe "observationsPages" do
+    test "fetches a page of observations" do
       user = fake_user!()
-      units = some(5, fn -> fake_observation!(user) end)
-      after_observation = List.first(units)
+      observations = some(5, fn -> fake_observation!(user) end)
+      after_observation = List.first(observations)
 
-      q = units_query()
+      q = observations_query()
       conn = user_conn(user)
       vars = %{after: after_observation.id, limit: 2}
-      assert %{"edges" => fetched} = grumble_post_key(q, conn, :units_pages, vars)
+      assert %{"edges" => fetched} = grumble_post_key(q, conn, :observations_pages, vars)
       assert Enum.count(fetched) == 2
       assert List.first(fetched)["id"] == after_observation.id
     end
@@ -61,20 +59,20 @@ defmodule ValueFlows.Observe.GraphQLTest do
 
       q = create_observation_mutation()
       conn = user_conn(user)
-      vars = %{observation: unit_input()}
-      assert_observation(grumble_post_key(q, conn, :create_observation, vars)["observation"])
+      vars = %{observation: observation_input(user)}
+      r = grumble_post_key(q, conn, :create_observation, vars) #|> IO.inspect()
+      assert_observation(r)
     end
 
     test "creates a new observation with a scope" do
       user = fake_user!()
       context = fake_user!()
 
-      IO.inspect(Pointers.Tables.data(), limit: :infinity)
-
       q = create_observation_mutation(fields: [in_scope_of: [:__typename]])
       conn = user_conn(user)
-      vars = %{observation: Map.put(unit_input(), :in_scope_of, context.id)}
-      assert_observation(grumble_post_key(q, conn, :create_observation, vars)["observation"])
+      vars = %{observation: Map.put(observation_input(user), :in_scope_of, context.id)}
+      r = grumble_post_key(q, conn, :create_observation, vars) #|> IO.inspect()
+      assert_observation(r)
     end
   end
 
@@ -85,8 +83,9 @@ defmodule ValueFlows.Observe.GraphQLTest do
 
       q = update_observation_mutation()
       conn = user_conn(user)
-      vars = %{observation: Map.put(unit_input(), "id", observation.id)}
-      assert_observation(grumble_post_key(q, conn, :update_observation, vars)["observation"])
+      vars = %{observation: Map.put(observation_input(user), "id", observation.id)}
+      r = grumble_post_key(q, conn, :update_observation, vars) #|> IO.inspect()
+      assert_observation(r)
     end
   end
 
@@ -100,15 +99,6 @@ defmodule ValueFlows.Observe.GraphQLTest do
       assert grumble_post_key(q, conn, :delete_observation, %{id: observation.id})
     end
 
-    test "fails to delete a observation if it has dependent measures" do
-      user = fake_user!()
-      observation = fake_observation!(user)
-      _observable_phenomenons = some(5, fn -> fake_observable_phenomenon!(user, observation) end)
-
-      q = delete_observation_mutation()
-      conn = user_conn(user)
-      assert [%{"status" => 403}] = grumble_post_errors(q, conn, %{id: observation.id})
-    end
   end
 
   describe "observable_phenomenon" do
@@ -117,23 +107,23 @@ defmodule ValueFlows.Observe.GraphQLTest do
       observation = fake_observation!(user)
       observable_phenomenon = fake_observable_phenomenon!(user, observation)
 
-      q = measure_query()
+      q = observable_phenomenon_query()
       conn = user_conn(user)
       assert_observable_phenomenon(grumble_post_key(q, conn, :observable_phenomenon, %{id: observable_phenomenon.id}))
     end
   end
 
-  describe "measuresPages" do
-    test "fetches a page of measures" do
+  describe "observable_phenomenonsPages" do
+    test "fetches a page of observable_phenomenons" do
       user = fake_user!()
       observation = fake_observation!(user)
-      measures = some(5, fn -> fake_observable_phenomenon!(user, observation) end)
-      after_observable_phenomenon = List.first(measures)
+      observable_phenomenons = some(5, fn -> fake_observable_phenomenon!(user, observation) end)
+      after_observable_phenomenon = List.first(observable_phenomenons)
 
-      q = measures_pages_query()
+      q = observable_phenomenons_pages_query()
       conn = user_conn(user)
       vars = %{after: after_observable_phenomenon.id, limit: 2}
-      assert %{"edges" => fetched} = grumble_post_key(q, conn, :measures_pages, vars)
+      assert %{"edges" => fetched} = grumble_post_key(q, conn, :observable_phenomenons_pages, vars)
       assert Enum.count(fetched) == 2
       assert List.first(fetched)["id"] == after_observable_phenomenon.id
     end

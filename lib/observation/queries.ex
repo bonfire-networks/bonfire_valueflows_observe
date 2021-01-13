@@ -8,11 +8,11 @@ defmodule ValueFlows.Observe.Observation.Queries do
   import Geo.PostGIS
 
   def query(Observation) do
-    from(c in Observation, as: :event)
+    from(c in Observation, as: :observation)
   end
 
   def query(:count) do
-    from(c in Observation, as: :event)
+    from(c in Observation, as: :observation)
   end
 
   def query(q, filters), do: filter(query(q), filters)
@@ -31,11 +31,32 @@ defmodule ValueFlows.Observe.Observation.Queries do
   end
 
   def join_to(q, :context, jq) do
-    join(q, jq, [event: c], c2 in assoc(c, :context), as: :context)
+    join(q, jq, [observation: c], c2 in assoc(c, :context), as: :context)
   end
 
   def join_to(q, :tags, jq) do
-    join(q, jq, [event: c], t in assoc(c, :tags), as: :tags)
+    join(q, jq, [observation: c], t in assoc(c, :tags), as: :tags)
+  end
+
+  def join_to(q, :has_feature_of_interest, jq) do
+    q
+    # |> join(jq, [observation: c], t in assoc(c, :has_feature_of_interest), as: :has_feature_of_interest)
+    |> preload(:has_observed_resource)
+    |> preload(:has_observed_agent)
+  end
+
+  def join_to(q, :observed_property, jq) do
+    q
+    # |> join(jq, [observation: c], t in assoc(c, :observed_property), as: :observed_property)
+    |> preload([observed_property: [:profile]])
+  end
+
+  def join_to(q, :has_result, jq) do
+    q
+    # |> join(jq, [observation: c], t in assoc(c, :has_result), as: :has_result)
+    # |> join(jq, [observation: c], m in assoc(c, :result_measure), as: :result_measure)
+    # |> join(jq, [observation: c, result_measure: m], u in assoc(m, :unit), as: :unit)
+    |> preload([result_measure: [:unit]])
   end
 
   # def join_to(q, :provider, jq) do
@@ -44,7 +65,7 @@ defmodule ValueFlows.Observe.Observation.Queries do
 
 
   # def join_to(q, :follower_count, jq) do
-  #   join q, jq, [event: c],
+  #   join q, jq, [observation: c],
   #     f in FollowerCount, on: c.id == f.context_id,
   #     as: :follower_count
   # end
@@ -60,9 +81,23 @@ defmodule ValueFlows.Observe.Observation.Queries do
   ## by preset
 
   def filter(q, :default) do
-    filter(q, [:deleted])
+    filter(q, [:deleted, :has_feature_of_interest, :observed_property, :has_result])
   end
 
+  def filter(q, :has_feature_of_interest) do
+    q
+    |> join_to(:has_feature_of_interest)
+  end
+
+  def filter(q, :observed_property) do
+    q
+    |> join_to(:observed_property)
+  end
+
+  def filter(q, :has_result) do
+    q
+    |> join_to(:has_result)
+  end
 
   ## by join
 
@@ -80,21 +115,21 @@ defmodule ValueFlows.Observe.Observation.Queries do
 
   def filter(q, {:user, %{id: user_id}}) do
     q
-    |> where([event: c], not is_nil(c.published_at) or c.creator_id == ^user_id)
+    |> where([observation: c], not is_nil(c.published_at) or c.creator_id == ^user_id)
     |> filter(~w(disabled)a)
   end
   ## by status
 
   def filter(q, :deleted) do
-    where(q, [event: c], is_nil(c.deleted_at))
+    where(q, [observation: c], is_nil(c.deleted_at))
   end
 
   def filter(q, :disabled) do
-    where(q, [event: c], is_nil(c.disabled_at))
+    where(q, [observation: c], is_nil(c.disabled_at))
   end
 
   def filter(q, :private) do
-    where(q, [event: c], not is_nil(c.published_at))
+    where(q, [observation: c], not is_nil(c.published_at))
   end
 
   ## by field values
@@ -103,7 +138,7 @@ defmodule ValueFlows.Observe.Observation.Queries do
       when is_integer(count) and is_binary(id) do
     where(
       q,
-      [event: c, follower_count: fc],
+      [observation: c, follower_count: fc],
       (fc.count == ^count and c.id >= ^id) or fc.count > ^count
     )
   end
@@ -112,41 +147,41 @@ defmodule ValueFlows.Observe.Observation.Queries do
       when is_integer(count) and is_binary(id) do
     where(
       q,
-      [event: c, follower_count: fc],
+      [observation: c, follower_count: fc],
       (fc.count == ^count and c.id <= ^id) or fc.count < ^count
     )
   end
 
   def filter(q, {:id, id}) when is_binary(id) do
-    where(q, [event: c], c.id == ^id)
+    where(q, [observation: c], c.id == ^id)
   end
 
   def filter(q, {:id, ids}) when is_list(ids) do
-    where(q, [event: c], c.id in ^ids)
+    where(q, [observation: c], c.id in ^ids)
   end
 
   def filter(q, {:context_id, id}) when is_binary(id) do
-    where(q, [event: c], c.context_id == ^id)
+    where(q, [observation: c], c.context_id == ^id)
   end
 
   def filter(q, {:context_id, ids}) when is_list(ids) do
-    where(q, [event: c], c.context_id in ^ids)
+    where(q, [observation: c], c.context_id in ^ids)
   end
 
   def filter(q, {:agent_id, id}) when is_binary(id) do
-    where(q, [event: c], c.provider_id == ^id)
+    where(q, [observation: c], c.provider_id == ^id)
   end
 
   def filter(q, {:agent_id, ids}) when is_list(ids) do
-    where(q, [event: c], c.provider_id in ^ids)
+    where(q, [observation: c], c.provider_id in ^ids)
   end
 
   def filter(q, {:provider_id, id}) when is_binary(id) do
-    where(q, [event: c], c.provider_id == ^id)
+    where(q, [observation: c], c.provider_id == ^id)
   end
 
   def filter(q, {:provider_id, ids}) when is_list(ids) do
-    where(q, [event: c], c.provider_id in ^ids)
+    where(q, [observation: c], c.provider_id in ^ids)
   end
 
 
@@ -154,30 +189,30 @@ defmodule ValueFlows.Observe.Observation.Queries do
     q
     |> join_to(:geolocation)
     |> preload(:at_location)
-    |> where([event: c], c.at_location_id == ^at_location_id)
+    |> where([observation: c], c.at_location_id == ^at_location_id)
   end
 
   def filter(q, {:near_point, geom_point, :distance_meters, meters}) do
     q
     |> join_to(:geolocation)
     |> preload(:at_location)
-    |> where([event: c, geolocation: g], st_dwithin_in_meters(g.geom, ^geom_point, ^meters))
+    |> where([observation: c, geolocation: g], st_dwithin_in_meters(g.geom, ^geom_point, ^meters))
   end
 
   def filter(q, {:location_within, geom_point}) do
     q
     |> join_to(:geolocation)
     |> preload(:at_location)
-    |> where([event: c, geolocation: g], st_within(g.geom, ^geom_point))
+    |> where([observation: c, geolocation: g], st_within(g.geom, ^geom_point))
   end
 
   def filter(q, {:tag_ids, ids}) when is_list(ids) do
     q
     |> preload(:tags)
     |> join_to(:tags)
-    |> group_by([event: c], c.id)
+    |> group_by([observation: c], c.id)
     |> having(
-      [event: c, tags: t],
+      [observation: c, tags: t],
       fragment("? <@ array_agg(?)", type(^ids, {:array, Pointers.ULID}), t.id)
     )
   end
@@ -191,28 +226,28 @@ defmodule ValueFlows.Observe.Observation.Queries do
   end
 
   def filter(q, {:resource_inventoried_as_id, ids}) when is_list(ids) do
-    where(q, [event: c], c.resource_inventoried_as_id in ^ids)
+    where(q, [observation: c], c.resource_inventoried_as_id in ^ids)
   end
 
   def filter(q, {:resource_inventoried_as_id, id}) when is_binary(id) do
-    where(q, [event: c], c.resource_inventoried_as_id == ^id)
+    where(q, [observation: c], c.resource_inventoried_as_id == ^id)
   end
 
   def filter(q, {:to_resource_inventoried_as_id, ids}) when is_list(ids) do
-    where(q, [event: c], c.to_resource_inventoried_as_id in ^ids)
+    where(q, [observation: c], c.to_resource_inventoried_as_id in ^ids)
   end
 
   def filter(q, {:to_resource_inventoried_as_id, id}) when is_binary(id) do
-    where(q, [event: c], c.to_resource_inventoried_as_id == ^id)
+    where(q, [observation: c], c.to_resource_inventoried_as_id == ^id)
   end
 
 
   def filter(q, {:output_of_id, id}) when is_binary(id) do
-    where(q, [event: c], c.output_of_id == ^id)
+    where(q, [observation: c], c.output_of_id == ^id)
   end
 
   def filter(q, {:input_of_id, id}) when is_binary(id) do
-    where(q, [event: c], c.input_of_id == ^id)
+    where(q, [observation: c], c.input_of_id == ^id)
   end
 
   ## by ordering
@@ -222,7 +257,7 @@ defmodule ValueFlows.Observe.Observation.Queries do
   end
 
   def filter(q, {:order, [desc: :id]}) do
-    order_by(q, [event: c, id: id],
+    order_by(q, [observation: c, id: id],
       desc: coalesce(id.count, 0),
       desc: c.id
     )
@@ -235,23 +270,27 @@ defmodule ValueFlows.Observe.Observation.Queries do
   end
 
   def filter(q, {:group, key}) when is_atom(key) do
-    group_by(q, [event: c], field(c, ^key))
+    group_by(q, [observation: c], field(c, ^key))
   end
 
   def filter(q, {:count, key}) when is_atom(key) do
-    select(q, [event: c], {field(c, ^key), count(c.id)})
+    select(q, [observation: c], {field(c, ^key), count(c.id)})
   end
 
   def filter(q, {:preload, :all}) do
     preload(q, [
       :context,
       :creator,
-      :has_feature_of_interest,
-      :observed_property,
-      :has_result,
+      # :has_feature_of_interest,
+      # :observed_property,
+      # :has_result,
       :at_location,
       :observed_during,
-      :provider
+      :provider,
+      :has_observed_resource,
+      :has_observed_agent,
+      [observed_property: [:profile]],
+      [result_measure: [:unit]]
     ])
   end
 
@@ -265,13 +304,13 @@ defmodule ValueFlows.Observe.Observation.Queries do
     limit = limit + 2
 
     q
-    |> where([event: c], c.id >= ^a)
+    |> where([observation: c], c.id >= ^a)
     |> limit(^limit)
   end
 
   def filter(q, {:paginate_id, %{before: b, limit: limit}}) do
     q
-    |> where([event: c], c.id <= ^b)
+    |> where([observation: c], c.id <= ^b)
     |> filter(limit: limit + 2)
   end
 
@@ -284,7 +323,7 @@ defmodule ValueFlows.Observe.Observation.Queries do
   #   |> filter(join: :follower_count, order: [desc: :followers])
   #   |> page(page_opts, [desc: :followers])
   #   |> select(
-  #     [event: c,  follower_count: fc],
+  #     [observation: c,  follower_count: fc],
   #     %{c | follower_count: coalesce(fc.count, 0)}
   #   )
   # end

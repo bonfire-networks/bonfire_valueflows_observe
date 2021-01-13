@@ -32,10 +32,11 @@ defmodule ValueFlows.Observe.Simulate do
      observation(overrides, fake_economic_resource!(user), fake_category!(user), fake_measure!(user))
   end
 
-  def observation_input(base \\ %{}) do
+  def observation_input(user, base \\ %{}) do
     base
-    # |> Map.put_new_lazy("label", &unit_name/0)
-    # |> Map.put_new_lazy("symbol", &unit_symbol/0)
+    |> Map.put_new(:has_feature_of_interest, fake_economic_resource!(user).id)
+    |> Map.put_new(:observed_property, fake_category!(user).id)
+    |> Map.put_new(:result_measure, measure_input(fake_unit!(user)))
   end
 
   def fake_observation!(user, context \\ nil, overrides \\ %{})
