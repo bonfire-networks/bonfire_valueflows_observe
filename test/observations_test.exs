@@ -1,5 +1,5 @@
 # # SPDX-License-Identifier: AGPL-3.0-only
-defmodule ValueFlows.Observe.UnitsTest do
+defmodule ValueFlows.Observe.ObservationsTest do
   use ValueFlows.Observe.ConnCase, async: true
 
   import ValueFlows.Observe.Test.Faking
@@ -17,37 +17,40 @@ defmodule ValueFlows.Observe.UnitsTest do
 
   import ValueFlows.Observe.Simulate
   alias ValueFlows.Observe.Observation
-  alias ValueFlows.Observe.Units
+  alias ValueFlows.Observe.Observations
 
   describe "one" do
     test "returns an item if it exists" do
       user = fake_user!(%{is_instance_admin: true})
       context = fake_user!()
+
       observation = fake_observation!(user, context)
 
-      assert {:ok, fetched} = Units.one(id: observation.id)
+      assert {:ok, fetched} = Observations.one(id: observation.id)
       assert_observation(observation, fetched)
-      assert {:ok, fetched} = Units.one(user: user)
+
+      assert {:ok, fetched} = Observations.one(provider_id: user.id)
       assert_observation(observation, fetched)
-      assert {:ok, fetched} = Units.one(context_id: context.id)
+
+      assert {:ok, fetched} = Observations.one(context_id: context.id)
       assert_observation(observation, fetched)
     end
 
     test "returns NotFound if item is missing" do
-      assert {:error, :not_found} = Units.one(id: ulid())
+      assert {:error, :not_found} = Observations.one(id: ulid())
     end
 
     test "returns NotFound if item is deleted" do
       observation = fake_user!() |> fake_observation!()
-      assert {:ok, observation} = Units.soft_delete(observation)
-      assert {:error, :not_found} = Units.one([:default, id: observation.id])
+      assert {:ok, observation} = Observations.soft_delete(observation)
+      assert {:error, :not_found} = Observations.one([:default, id: observation.id])
     end
   end
 
   describe "create without context" do
     test "creates a new observation" do
       user = fake_user!()
-      assert {:ok, observation = %Observation{}} = Units.create(user, observation())
+      assert {:ok, observation = %Observation{}} = Observations.create(user, observation_with_req_fields(user))
       assert observation.creator_id == user.id
     end
   end
@@ -57,13 +60,13 @@ defmodule ValueFlows.Observe.UnitsTest do
       user = fake_user!()
       context = fake_user!()
 
-      assert {:ok, observation = %Observation{}} = Units.create(user, context, observation())
+      assert {:ok, observation = %Observation{}} = Observations.create(user, context, observation_with_req_fields(user))
       assert observation.creator_id == user.id
       assert observation.context_id == context.id
     end
 
     test "fails with invalid attributes" do
-      assert {:error, %Ecto.Changeset{}} = Units.create(fake_user!(), %{})
+      assert {:error, %Ecto.Changeset{}} = Observations.create(fake_user!(), %{})
     end
   end
 
@@ -71,8 +74,8 @@ defmodule ValueFlows.Observe.UnitsTest do
     test "updates a a observation" do
       user = fake_user!()
       context = fake_user!()
-      observation = fake_observation!(user, context, %{label: "Bottle Caps", symbol: "C"})
-      assert {:ok, updated} = Units.update(observation, %{label: "Rad", symbol: "rad"})
+      observation = fake_observation!(user, context, %{note: "Bottle Caps"})
+      assert {:ok, updated} = Observations.update(user, observation, %{note: "Rad"})
       assert observation != updated
     end
   end
@@ -81,24 +84,24 @@ defmodule ValueFlows.Observe.UnitsTest do
     test "deletes an existing observation" do
       observation = fake_user!() |> fake_observation!()
       refute observation.deleted_at
-      assert {:ok, deleted} = Units.soft_delete(observation)
+      assert {:ok, deleted} = Observations.soft_delete(observation)
       assert deleted.deleted_at
     end
   end
 
-  # describe "units" do
+  # describe "Observations" do
 
   #   test "works for a guest" do
   #     users = some_fake_users!(3)
   #     communities = some_fake_communities!(3, users) # 9
-  #     units = some_fake_collections!(1, users, communities) # 27
+  #     Observations = some_fake_collections!(1, users, communities) # 27
   #     root_page_test %{
-  #       query: units_query(),
+  #       query: observations_query(),
   #       connection: json_conn(),
-  #       return_key: :units,
+  #       return_key: :Observations,
   #       default_limit: 10,
   #       total_count: 27,
-  #       data: order_follower_count(units),
+  #       data: order_follower_count(Observations),
   #       assert_fn: &assert_observation/2,
   #       cursor_fn: &[&1.id],
   #       after: :collections_after,

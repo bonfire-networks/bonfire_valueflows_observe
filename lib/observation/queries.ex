@@ -42,9 +42,6 @@ defmodule ValueFlows.Observe.Observation.Queries do
   #   join q, jq, [follow: f], c in assoc(f, :provider), as: :pointer
   # end
 
-  # def join_to(q, :receiver, jq) do
-  #   join q, jq, [follow: f], c in assoc(f, :receiver), as: :pointer
-  # end
 
   # def join_to(q, :follower_count, jq) do
   #   join q, jq, [event: c],
@@ -66,13 +63,6 @@ defmodule ValueFlows.Observe.Observation.Queries do
     filter(q, [:deleted])
   end
 
-  def filter(q, :offer) do
-    where(q, [event: c], is_nil(c.receiver_id))
-  end
-
-  def filter(q, :need) do
-    where(q, [event: c], is_nil(c.provider_id))
-  end
 
   ## by join
 
@@ -144,11 +134,11 @@ defmodule ValueFlows.Observe.Observation.Queries do
   end
 
   def filter(q, {:agent_id, id}) when is_binary(id) do
-    where(q, [event: c], c.provider_id == ^id or c.receiver_id == ^id)
+    where(q, [event: c], c.provider_id == ^id)
   end
 
   def filter(q, {:agent_id, ids}) when is_list(ids) do
-    where(q, [event: c], c.provider_id in ^ids or c.receiver_id in ^ids)
+    where(q, [event: c], c.provider_id in ^ids)
   end
 
   def filter(q, {:provider_id, id}) when is_binary(id) do
@@ -159,21 +149,6 @@ defmodule ValueFlows.Observe.Observation.Queries do
     where(q, [event: c], c.provider_id in ^ids)
   end
 
-  def filter(q, {:receiver_id, id}) when is_binary(id) do
-    where(q, [event: c], c.receiver_id == ^id)
-  end
-
-  def filter(q, {:receiver_id, ids}) when is_list(ids) do
-    where(q, [event: c], c.receiver_id in ^ids)
-  end
-
-  def filter(q, {:action_id, ids}) when is_list(ids) do
-    where(q, [event: c], c.action_id in ^ids)
-  end
-
-  def filter(q, {:action_id, id}) when is_binary(id) do
-    where(q, [event: c], c.action_id == ^id)
-  end
 
   def filter(q, {:at_location_id, at_location_id}) do
     q
@@ -231,16 +206,6 @@ defmodule ValueFlows.Observe.Observation.Queries do
     where(q, [event: c], c.to_resource_inventoried_as_id == ^id)
   end
 
-  def filter(q, {:track_resource, id}) when is_binary(id) do
-    q
-    |> filter({:resource_inventoried_as_id, id})
-    |> where([event: c], not is_nil(c.input_of_id) or c.action_id in ["transfer","move"])
-  end
-
-  def filter(q, {:trace_resource, id}) when is_binary(id) do
-    where(q, [event: c], not is_nil(c.output_of_id) or \
-      (c.to_resource_inventoried_as_id == ^id and c.action_id in ["transfer","move"]))
-  end
 
   def filter(q, {:output_of_id, id}) when is_binary(id) do
     where(q, [event: c], c.output_of_id == ^id)
@@ -281,17 +246,12 @@ defmodule ValueFlows.Observe.Observation.Queries do
     preload(q, [
       :context,
       :creator,
-      :observed_measure,
-      :effort_quantity,
+      :has_feature_of_interest,
+      :observed_property,
+      :has_result,
       :at_location,
       :observed_during,
-      :output_of,
-      :resource_conforms_to,
-      :resource_inventoried_as,
-      :to_resource_inventoried_as,
-      :provider,
-      :receiver,
-      :triggered_by
+      :provider
     ])
   end
 

@@ -17,18 +17,12 @@ defmodule ValueFlows.Observe.GraphQL do
   }
 
   alias ValueFlows.Observe.Observation
-  alias ValueFlows.Observe.Observation.Observations
+  alias ValueFlows.Observe.Observations
   alias ValueFlows.Observe.Observation.Queries
 
   ## resolvers
 
-  def simulate(%{id: _id}, _) do
-    {:ok, ValueFlows.Simulate.observation()}
-  end
 
-  def simulate(_, _) do
-    {:ok, Bonfire.Common.Simulation.some(1..5, &ValueFlows.Simulate.observation/0)}
-  end
 
   def event(%{id: id}, info) do
     ResolveField.run(%ResolveField{
@@ -54,41 +48,33 @@ defmodule ValueFlows.Observe.GraphQL do
     Observations.many([:default])
   end
 
-  def events_filtered(page_opts, _ \\ nil) do
-    events_filter(page_opts, [])
+  def observations_filtered(page_opts, _ \\ nil) do
+    observations_filter(page_opts, [])
   end
 
   # TODO: support several filters combined, plus pagination on filtered queries
 
-  defp events_filter(%{agent: id} = page_opts, filters_acc) do
-    events_filter_next(:agent, [agent_id: id], page_opts, filters_acc)
+  defp observations_filter(%{agent: id} = page_opts, filters_acc) do
+    observations_filter_next(:agent, [agent_id: id], page_opts, filters_acc)
   end
 
-  defp events_filter(%{provider: id} = page_opts, filters_acc) do
-    events_filter_next(:provider, [provider_id: id], page_opts, filters_acc)
+  defp observations_filter(%{provider: id} = page_opts, filters_acc) do
+    observations_filter_next(:provider, [provider_id: id], page_opts, filters_acc)
   end
 
-  defp events_filter(%{receiver: id} = page_opts, filters_acc) do
-    events_filter_next(:receiver, [receiver_id: id], page_opts, filters_acc)
+  defp observations_filter(%{in_scope_of: context_id} = page_opts, filters_acc) do
+    observations_filter_next(:in_scope_of, [context_id: context_id], page_opts, filters_acc)
   end
 
-  defp events_filter(%{action: id} = page_opts, filters_acc) do
-    events_filter_next(:action, [action_id: id], page_opts, filters_acc)
+  defp observations_filter(%{tag_ids: tag_ids} = page_opts, filters_acc) do
+    observations_filter_next(:tag_ids, [tag_ids: tag_ids], page_opts, filters_acc)
   end
 
-  defp events_filter(%{in_scope_of: context_id} = page_opts, filters_acc) do
-    events_filter_next(:in_scope_of, [context_id: context_id], page_opts, filters_acc)
+  defp observations_filter(%{at_location: at_location_id} = page_opts, filters_acc) do
+    observations_filter_next(:at_location, [at_location_id: at_location_id], page_opts, filters_acc)
   end
 
-  defp events_filter(%{tag_ids: tag_ids} = page_opts, filters_acc) do
-    events_filter_next(:tag_ids, [tag_ids: tag_ids], page_opts, filters_acc)
-  end
-
-  defp events_filter(%{at_location: at_location_id} = page_opts, filters_acc) do
-    events_filter_next(:at_location, [at_location_id: at_location_id], page_opts, filters_acc)
-  end
-
-  defp events_filter(
+  defp observations_filter(
          %{
            geolocation: %{
              near_point: %{lat: lat, long: long},
@@ -97,7 +83,7 @@ defmodule ValueFlows.Observe.GraphQL do
          } = page_opts,
          filters_acc
        ) do
-    events_filter_next(
+    observations_filter_next(
       :geolocation,
       {
         :near_point,
@@ -110,14 +96,14 @@ defmodule ValueFlows.Observe.GraphQL do
     )
   end
 
-  defp events_filter(
+  defp observations_filter(
          %{
            geolocation: %{near_address: address} = geolocation
          } = page_opts,
          filters_acc
        ) do
     with {:ok, coords} <- Geocoder.call(address) do
-      events_filter(
+      observations_filter(
         Map.merge(
           page_opts,
           %{
@@ -132,7 +118,7 @@ defmodule ValueFlows.Observe.GraphQL do
       )
     else
       _ ->
-        events_filter_next(
+        observations_filter_next(
           :geolocation,
           [],
           page_opts,
@@ -141,13 +127,13 @@ defmodule ValueFlows.Observe.GraphQL do
     end
   end
 
-  defp events_filter(
+  defp observations_filter(
          %{
            geolocation: geolocation
          } = page_opts,
          filters_acc
        ) do
-    events_filter(
+    observations_filter(
       Map.merge(
         page_opts,
         %{
@@ -162,7 +148,7 @@ defmodule ValueFlows.Observe.GraphQL do
     )
   end
 
-  defp events_filter(
+  defp observations_filter(
          _,
          filters_acc
        ) do
@@ -170,19 +156,19 @@ defmodule ValueFlows.Observe.GraphQL do
     Observations.many(filters_acc)
   end
 
-  defp events_filter_next(param_remove, filter_add, page_opts, filters_acc)
+  defp observations_filter_next(param_remove, filter_add, page_opts, filters_acc)
        when is_list(param_remove) and is_list(filter_add) do
-    events_filter(Map.drop(page_opts, param_remove), filters_acc ++ filter_add)
+    observations_filter(Map.drop(page_opts, param_remove), filters_acc ++ filter_add)
   end
 
-  defp events_filter_next(param_remove, filter_add, page_opts, filters_acc)
+  defp observations_filter_next(param_remove, filter_add, page_opts, filters_acc)
        when not is_list(filter_add) do
-    events_filter_next(param_remove, [filter_add], page_opts, filters_acc)
+    observations_filter_next(param_remove, [filter_add], page_opts, filters_acc)
   end
 
-  defp events_filter_next(param_remove, filter_add, page_opts, filters_acc)
+  defp observations_filter_next(param_remove, filter_add, page_opts, filters_acc)
        when not is_list(param_remove) do
-    events_filter_next([param_remove], filter_add, page_opts, filters_acc)
+    observations_filter_next([param_remove], filter_add, page_opts, filters_acc)
   end
 
   def track(event, _, info) do
@@ -215,7 +201,7 @@ defmodule ValueFlows.Observe.GraphQL do
   end
 
   def agent_events(%{id: agent}, %{} = _page_opts, _info) do
-    events_filtered(%{agent: agent})
+    observations_filtered(%{agent: agent})
   end
 
   def agent_events(_, _page_opts, _info) do

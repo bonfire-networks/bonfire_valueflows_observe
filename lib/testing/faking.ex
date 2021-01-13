@@ -13,7 +13,7 @@ defmodule ValueFlows.Observe.Test.Faking do
 
   alias ValueFlows.Observe.{ObservablePhenomenon, Observation}
   # alias ValueFlows.Observe.Measures
-  # alias ValueFlows.Observe.Units
+  # alias ValueFlows.Observe.Observations
 
   ## Observation
 
@@ -99,22 +99,22 @@ defmodule ValueFlows.Observe.Test.Faking do
   def assert_observation(observation) do
     assert_object(observation, :assert_observation,
       id: &assert_ulid/1,
-      label: &assert_binary/1,
-      symbol: &assert_binary/1
+      note: &assert_binary/1,
+      has_result_id: &assert_ulid/1
     )
   end
 
-  def assert_observation(%Observation{} = observation, %{id: _} = unit2) do
-    assert_observations_eq(observation, unit2)
+  def assert_observation(%Observation{} = observation, %{id: _} = obs2) do
+    assert_observations_eq(observation, obs2)
   end
 
-  def assert_observation(%Observation{} = observation, %{} = unit2) do
-    assert_observations_eq(observation, assert_observation(unit2))
+  def assert_observation(%Observation{} = observation, %{} = obs2) do
+    assert_observations_eq(observation, assert_observation(obs2))
   end
 
-  def assert_observations_eq(%Observation{} = observation, %{} = unit2) do
-    assert_maps_eq(observation, unit2, :assert_observation, [:id, :label, :symbol])
-    unit2
+  def assert_observations_eq(%Observation{} = observation, %{} = obs2) do
+    assert_maps_eq(observation, obs2, :assert_observation, [:id, :note])
+    obs2
   end
 
   # def some_fake_observations!(opts \\ %{}, some_arg, users, communities) do
@@ -200,23 +200,23 @@ defmodule ValueFlows.Observe.Test.Faking do
     |> gen_submutation(:update_observable_phenomenon, &measure_response_fields/1, options)
   end
 
-  def assert_observable_phenomenon(%ObservablePhenomenon{} = observable_phenomenon) do
-    assert_observable_phenomenon(Map.from_struct(observable_phenomenon))
-  end
+  # def assert_observable_phenomenon(%ObservablePhenomenon{} = observable_phenomenon) do
+  #   assert_observable_phenomenon(Map.from_struct(observable_phenomenon))
+  # end
 
-  def assert_observable_phenomenon(observable_phenomenon) do
-    assert_object(observable_phenomenon, :assert_observable_phenomenon, has_numerical_value: &assert_float/1)
-  end
+  # def assert_observable_phenomenon(observable_phenomenon) do
+  #   assert_object(observable_phenomenon, :assert_observable_phenomenon, has_numerical_value: &assert_float/1)
+  # end
 
-  def assert_observable_phenomenon(%ObservablePhenomenon{} = observable_phenomenon, %{} = measure2) do
-    assert_observable_phenomenons_eq(observable_phenomenon, assert_observable_phenomenon(measure2))
-  end
+  # def assert_observable_phenomenon(%ObservablePhenomenon{} = observable_phenomenon, %{} = measure2) do
+  #   assert_observable_phenomenons_eq(observable_phenomenon, assert_observable_phenomenon(measure2))
+  # end
 
-  def assert_observable_phenomenons_eq(%ObservablePhenomenon{} = observable_phenomenon, %{} = measure2) do
-    assert_maps_eq(observable_phenomenon, measure2, :assert_observable_phenomenon, [
-      :has_numerical_value,
-      :published_at,
-      :disabled_at
-    ])
-  end
+  # def assert_observable_phenomenons_eq(%ObservablePhenomenon{} = observable_phenomenon, %{} = measure2) do
+  #   assert_maps_eq(observable_phenomenon, measure2, :assert_observable_phenomenon, [
+  #     :has_numerical_value,
+  #     :published_at,
+  #     :disabled_at
+  #   ])
+  # end
 end

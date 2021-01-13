@@ -1,5 +1,5 @@
 # SPDX-License-Identifier: AGPL-3.0-only
-defmodule ValueFlows.Observe.Observation.Observations do
+defmodule ValueFlows.Observe.Observations do
   import Bonfire.Common.Utils, only: [maybe_put: 3, attr_get_id: 2, maybe: 2, maybe_append: 2, map_key_replace: 3]
 
   import Bonfire.Common.Config, only: [repo: 0]
@@ -93,186 +93,12 @@ defmodule ValueFlows.Observe.Observation.Observations do
 
   def preload_all(%Observation{} = event) do
     {:ok, event} = one(id: event.id, preload: :all)
-    preload_action(event)
+    event
   end
 
-  def preload_action(event) do
-    event |> Map.put(:action, ValueFlows.Knowledge.Action.Actions.action!(event.action_id))
-  end
-
-  # processes is actually only one, so we can use [process | resources]
-  def track(event) do
-    with {:ok, resources} <- track_resource_output(event),
-         {:ok, to_resource} <- track_to_resource_output(event),
-         {:ok, process} <- track_process_input(event) do
-      {
-        :ok,
-        resources
-        |> maybe_append(process)
-        |> maybe_append(to_resource)
-      }
-    end
-  end
-
-  defp track_to_resource_output(
-         %{action_id: action_id, to_resource_inventoried_as_id: to_resource_inventoried_as_id} =
-           _event
-       )
-       when action_id in ["transfer", "move"] and not is_nil(to_resource_inventoried_as_id) do
-    EconomicResources.one([:default, id: to_resource_inventoried_as_id])
-  end
-
-  defp track_to_resource_output(_) do
-    {:ok, nil}
-  end
-
-  defp track_resource_output(%{output_of_id: output_of_id}) when not is_nil(output_of_id) do
-    EconomicResources.many([:default, join: [event_output: output_of_id]])
-  end
-
-  defp track_resource_output(_) do
-    {:ok, []}
-  end
-
-  defp track_process_input(%{input_of_id: input_of_id}) when not is_nil(input_of_id) do
-    Processes.one([:default, id: input_of_id])
-  end
-
-  defp track_process_input(_) do
-    {:ok, nil}
-  end
-
-  def trace(event) do
-    with {:ok, resource_inventoried_as} <- trace_resource_inventoried_as(event),
-         {:ok, process} <- trace_process_output(event),
-         {:ok, resources} <- trace_resource_input(event) do
-      {
-        :ok,
-        resources
-        |> maybe_append(resource_inventoried_as)
-        |> maybe_append(process)
-      }
-    end
-  end
-
-  defp trace_resource_inventoried_as(
-         %{action_id: action_id, resource_inventoried_as_id: resource_inventoried_as_id} = _event
-       )
-       when action_id in ["transfer", "move"] and not is_nil(resource_inventoried_as_id) do
-    EconomicResources.one([:default, id: resource_inventoried_as_id])
-  end
-
-  defp trace_resource_inventoried_as(_) do
-    {:ok, nil}
-  end
-
-  defp trace_process_output(%{output_of_id: output_of_id}) when not is_nil(output_of_id) do
-    Processes.one([:default, id: output_of_id])
-  end
-
-  defp trace_process_output(_) do
-    {:ok, nil}
-  end
-
-  defp trace_resource_input(%{input_of_id: input_of_id}) when not is_nil(input_of_id) do
-    # with {:ok, events} <- many([:default, input_of_id: input_of_id]),
-    #      resource_ids = Enum.map(events, & &1.resource_inventoried_as_id) do
-    #   EconomicResources.many([:default, id: resource_ids])
-    # end
-
-    EconomicResources.many([:default, [join: [event_input: input_of_id]]])
-  end
-
-  defp trace_resource_input(_) do
-    {:ok, []}
-  end
 
   ## mutations
 
-  def create(
-        _creator,
-        %{
-          resource_inventoried_as: from_existing_resource,
-          to_resource_inventoried_as: to_existing_resource
-        },
-        %{
-          new_inventoried_resource: _new_inventoried_resource
-        }
-      )
-      when not is_nil(from_existing_resource) and not is_nil(to_existing_resource) do
-    {:error, "Oops, you cannot act on three resources in one event."}
-  end
-
-  def create(
-        creator,
-        %{
-          to_resource_inventoried_as: to_existing_resource
-        } = event_attrs,
-        %{
-          new_inventoried_resource: new_inventoried_resource
-        }
-      )
-      when not is_nil(to_existing_resource) do
-    Logger.info("create a new FROM resource to go with an existing TO resource")
-
-    new_resource_attrs =
-      new_inventoried_resource
-      |> Map.put_new(:primary_accountable, Map.get(event_attrs, :provider, creator))
-
-    create_resource_and_event(
-      creator,
-      event_attrs,
-      new_resource_attrs,
-      :resource_inventoried_as
-    )
-  end
-
-  def create(
-        creator,
-        %{
-          resource_inventoried_as: from_existing_resource
-        } = event_attrs,
-        %{
-          new_inventoried_resource: new_inventoried_resource
-        }
-      )
-      when not is_nil(from_existing_resource) do
-    Logger.info("creates a new TO resource to go with an existing FROM resource")
-
-    new_resource_attrs =
-      new_inventoried_resource
-      |> Map.put_new(:primary_accountable, Map.get(event_attrs, :receiver, creator))
-
-    create_resource_and_event(
-      creator,
-      event_attrs,
-      new_resource_attrs,
-      :to_resource_inventoried_as
-    )
-  end
-
-  def create(creator, event_attrs, %{
-        new_inventoried_resource: new_inventoried_resource
-      }) do
-    Logger.info("creates only a new resource")
-
-    new_resource_attrs =
-      new_inventoried_resource
-      |> Map.put_new(:primary_accountable, Map.get(event_attrs, :provider, creator))
-
-    create_resource_and_event(
-      creator,
-      event_attrs,
-      new_resource_attrs,
-      :resource_inventoried_as
-    )
-  end
-
-  def create(creator, event_attrs, _) do
-    with {:ok, event} <- create(creator, event_attrs) do
-      {:ok, event, nil}
-    end
-  end
 
   @doc """
   Create an Event (with preexisting resources)
@@ -282,7 +108,6 @@ defmodule ValueFlows.Observe.Observation.Observations do
       event_attrs
       # fallback if none indicated
       |> Map.put_new(:provider, creator)
-      |> Map.put_new(:receiver, creator)
       |> prepare_attrs()
 
     cs = Observation.create_changeset(creator, new_event_attrs)
@@ -293,12 +118,9 @@ defmodule ValueFlows.Observe.Observation.Observations do
     repo().transact_with(fn ->
       with :ok <- validate_user_involvement(creator, new_event_attrs),
            :ok <- validate_provider_is_primary_accountable(new_event_attrs),
-           :ok <- validate_receiver_is_primary_accountable(new_event_attrs),
            {:ok, event} <- repo().insert(cs |> Observation.create_changeset_validate()),
            {:ok, event} <- ValueFlows.Util.try_tag_thing(creator, event, new_event_attrs),
            event = preload_all(event),
-           {:ok, event} <- maybe_transfer_resource(event),
-           {:ok, event} <- EventSideEffects.event_side_effects(event),
            act_attrs = %{verb: "created", is_local: true},
            # FIXME
            {:ok, activity} <- ValueFlows.Util.activity_create(creator, event, act_attrs),
@@ -309,26 +131,10 @@ defmodule ValueFlows.Observe.Observation.Observations do
     end)
   end
 
-  defp create_resource_and_event(creator, event_attrs, new_inventoried_resource, field_name) do
-    new_resource_attrs =
-      new_inventoried_resource
-      |> Map.put_new(:is_public, true)
+  def create(%{} = creator, %{id: context_id}, event_attrs) do
 
-    with {:ok, new_resource} <-
-           ValueFlows.Observe.EconomicResource.EconomicResources.create(
-             creator,
-             new_resource_attrs
-           ) do
-      event_attrs = Map.merge(event_attrs, %{field_name => new_resource.id})
-
-      with {:ok, event} <- create(creator, event_attrs) do
-        {:ok, event, new_resource}
-      else
-        e ->
-          # TODO: maybe we need to delete the created resource?
-          e
-      end
-    end
+    create(creator, event_attrs
+      |> Map.put_new(:context_id, context_id))
   end
 
   # TODO: take the user who is performing the update
@@ -340,7 +146,6 @@ defmodule ValueFlows.Observe.Observation.Observations do
 
       with :ok <- validate_user_involvement(user, event),
            {:ok, event} <- repo().update(Observation.update_changeset(event, attrs)),
-           {:ok, event} <- maybe_transfer_resource(event),
            {:ok, event} <- ValueFlows.Util.try_tag_thing(nil, event, attrs),
            :ok <- ValueFlows.Util.publish(event, :updated) do
         {:ok, event}
@@ -348,58 +153,27 @@ defmodule ValueFlows.Observe.Observation.Observations do
     end)
   end
 
-  defp maybe_transfer_resource(
-         %Observation{
-           to_resource_inventoried_as_id: to_resource_id,
-           provider_id: provider_id,
-           receiver_id: receiver_id,
-           action_id: action_id
-         } = event
-       )
-       when action_id in ["transfer", "transfer-all-rights"] and not is_nil(to_resource_id) and
-              not is_nil(provider_id) and not is_nil(receiver_id) and
-              provider_id != receiver_id do
-    with {:ok, to_resource} <- EconomicResources.one([:default, id: to_resource_id]),
-         :ok <- validate_provider_is_primary_accountable(event),
-         {:ok, to_resource} <-
-           EconomicResources.update(to_resource, %{primary_accountable: receiver_id}) do
-      {:ok, %{event | to_resource_inventoried_as: to_resource}}
-    end
-  end
-
-  defp maybe_transfer_resource(event) do
-    {:ok, event}
-  end
 
   defp validate_user_involvement(
          %{id: creator_id},
-         %{provider_id: provider_id, receiver_id: receiver_id} = _event
+         %{provider_id: provider_id} = _event
        )
-       when provider_id == creator_id or receiver_id == creator_id do
+       when provider_id == creator_id do
     # TODO add more complex rules once we have agent roles/relationships
     :ok
   end
 
-  defp validate_user_involvement(
-         %{id: creator_id},
-         %{provider: provider, receiver: receiver} = _event
-       )
-       when (is_binary(provider) and is_binary(receiver) and provider == creator_id) or
-              receiver == creator_id do
-    :ok
-  end
 
   defp validate_user_involvement(
          creator,
-         %{provider: provider, receiver: receiver} = _event
+         %{provider: provider} = _event
        )
-       when provider == creator or
-              receiver == creator do
+       when provider == creator do
     :ok
   end
 
   defp validate_user_involvement(_creator, _event) do
-   {:error, error(403, "You cannot do this if you are not receiver or provider.")}
+   {:error, error(403, "You cannot do this if you are not provider.")}
   end
 
   defp validate_provider_is_primary_accountable(
@@ -429,44 +203,24 @@ defmodule ValueFlows.Observe.Observation.Observations do
     :ok
   end
 
-  defp validate_receiver_is_primary_accountable(
-         %{to_resource_inventoried_as_id: resource_id, receiver_id: receiver_id} = _event
-       )
-       when not is_nil(resource_id) do
-    with {:ok, resource} <- EconomicResources.one([:default, id: resource_id]) do
-      if is_nil(resource.primary_accountable_id) or
-           receiver_id == resource.primary_accountable_id do
-        :ok
-      else
-        {:error, error(403, "You cannot do this since the receiver is not accountable for the target resource.")}
-      end
-    end
-  end
-
-  defp validate_receiver_is_primary_accountable(_event) do
-    :ok
-  end
 
   defp prepare_attrs(attrs) do
     attrs
-    |> maybe_put(:action_id, attr_get_id(attrs, :action))
     |> maybe_put(
       :context_id,
-      attrs |> Map.get(:in_scope_of) |> maybe(&List.first/1)
+      attrs |> Map.get(:in_scope_of, []) |> maybe(&List.first/1)
     )
     |> maybe_put(:provider_id, attr_get_id(attrs, :provider))
-    |> maybe_put(:receiver_id, attr_get_id(attrs, :receiver))
-    |> maybe_put(:input_of_id, attr_get_id(attrs, :observed_during))
-    |> maybe_put(:output_of_id, attr_get_id(attrs, :output_of))
-    |> maybe_put(:resource_conforms_to_id, attr_get_id(attrs, :resource_conforms_to))
-    |> maybe_put(:resource_inventoried_as_id, attr_get_id(attrs, :resource_inventoried_as))
-    |> maybe_put(:to_resource_inventoried_as_id, attr_get_id(attrs, :to_resource_inventoried_as))
-    |> maybe_put(:triggered_by_id, attr_get_id(attrs, :triggered_by))
+    |> maybe_put(:made_by_sensor_id, attr_get_id(attrs, :made_by_sensor_id))
+    |> maybe_put(:has_feature_of_interest_id, attr_get_id(attrs, :has_feature_of_interest))
+    |> maybe_put(:observed_property_id, attr_get_id(attrs, :observed_property))
+    |> maybe_put(:has_result_id, attr_get_id(attrs, :has_result))
+    |> maybe_put(:observed_during_id, attr_get_id(attrs, :observed_during))
     |> maybe_put(:at_location_id, attr_get_id(attrs, :at_location))
-    |> parse_observable_phenomenonment_attrs()
+    |> parse_measure_attrs()
   end
 
-  defp parse_observable_phenomenonment_attrs(attrs) do
+  defp parse_measure_attrs(attrs) do
     Enum.reduce(attrs, %{}, fn {k, v}, acc ->
       if is_map(v) and Map.has_key?(v, :has_observation) do
         v = map_key_replace(v, :has_observation, :unit_id)

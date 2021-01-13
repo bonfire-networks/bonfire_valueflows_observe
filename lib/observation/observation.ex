@@ -2,7 +2,7 @@ defmodule ValueFlows.Observe.Observation do
   use Pointers.Pointable,
     otp_app: :commons_pub,
     source: "vf_observe_observation",
-    table_id: "ACTVA10BSERVEDF10WS0FVA1VE"
+    table_id: "0BSERVEDPHEN0MEN0N0RMEASVR"
 
   import Bonfire.Repo.Changeset, only: [change_public: 1, change_disabled: 1]
 
@@ -23,23 +23,25 @@ defmodule ValueFlows.Observe.Observation do
 
     field(:result_time, :utc_datetime_usec)
 
-    belongs_to(:observed_during, Process)
+    # agent
+    belongs_to(:provider, Pointers.Pointer)
+
+    # agent or `EconomicResource` or `ResourceSpecification`
+    belongs_to(:made_by_sensor, Pointers.Pointer)
+    belongs_to(:made_by_resource, EconomicResource, foreign_key: :made_by_sensor_id, define_field: false)
+    belongs_to(:made_by_resource_specification, ResourceSpecification, foreign_key: :made_by_sensor_id, define_field: false)
 
     # EconomicResource or Agent
     belongs_to(:has_feature_of_interest, Pointers.Pointer)
+    belongs_to(:has_observed_resource, EconomicResource, foreign_key: :has_feature_of_interest_id, define_field: false)
 
-    belongs_to(:result_phenomenon, Pointers.Pointer) # TBD
-    belongs_to(:result_measure, Measure, on_replace: :nilify)
+    belongs_to(:observed_property, Pointers.Pointer) # TBD
 
-    belongs_to(:provider, Pointers.Pointer)
+    belongs_to(:has_result, Pointers.Pointer) # TBD
+    belongs_to(:has_measure, Measure, on_replace: :nilify, foreign_key: :has_result_id, define_field: false)
+    belongs_to(:has_phenomenon, Bonfire.Classify.Category, on_replace: :nilify, foreign_key: :has_result_id, define_field: false) # TBD (category?)
 
-    belongs_to(:resource_inventoried_as, EconomicResource)
-    belongs_to(:to_resource_inventoried_as, EconomicResource)
-
-    field(:resource_classified_as, {:array, :string}, virtual: true)
-
-    belongs_to(:resource_conforms_to, ResourceSpecification)
-
+    belongs_to(:observed_during, Process)
 
     belongs_to(:at_location, Bonfire.Geolocate.Geolocation)
 
@@ -63,11 +65,11 @@ defmodule ValueFlows.Observe.Observation do
     timestamps(inserted_at: false)
   end
 
-  @required ~w(action_id provider_id receiver_id is_public)a
+  @required ~w(has_feature_of_interest_id observed_property_id has_result_id is_public)a
   @cast @required ++
-          ~w(note resource_classified_as agreed_in has_beginning has_end result_time is_disabled)a ++
-          ~w(input_of_id output_of_id resource_conforms_to_id resource_inventoried_as_id to_resource_inventoried_as_id)a ++
-          ~w(triggered_by_id at_location_id context_id)a
+          ~w(provider_id note is_disabled)a ++
+          ~w(result_time made_by_sensor_id observed_during_id)a ++
+          ~w(at_location_id context_id)a
 
   def create_changeset(
         %{} = creator,
@@ -122,7 +124,7 @@ defmodule ValueFlows.Observe.Observation do
     )
   end
 
-  def context_module, do: ValueFlows.Observe.Observation.Observations
+  def context_module, do: ValueFlows.Observe.Observations
 
   def queries_module, do: ValueFlows.Observe.Observation.Queries
 
