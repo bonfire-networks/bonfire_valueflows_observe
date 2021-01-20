@@ -14,8 +14,6 @@ defmodule ValueFlows.Observe.Observation do
   alias ValueFlows.EconomicResource
   alias ValueFlows.Process
 
-  alias Bonfire.Quantify.ObservablePhenomenon
-
   @type t :: %__MODULE__{}
 
   pointable_schema do

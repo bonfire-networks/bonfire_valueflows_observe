@@ -8,6 +8,7 @@ defmodule ValueFlows.Observe.Simulate do
   import Bonfire.Classify.Simulate
 
   alias ValueFlows.Observe.Observations
+  alias ValueFlows.Observe.ObservableProperties
   alias ValueFlows.Observe.ObservablePhenomenons
 
   ### Start fake data functions
@@ -51,26 +52,53 @@ defmodule ValueFlows.Observe.Simulate do
     observation
   end
 
+
+  ## ObservableProperties
+
+  def observable_property(overrides \\ %{}) do
+    overrides
+    |> Map.put_new_lazy(:label, &name/0)
+  end
+
+  def observable_property_input(overrides \\ %{}) do
+    overrides
+    |> Map.put_new_lazy("label", &name/0)
+  end
+
+  def fake_observable_property!(user, overrides \\ %{}) do
+    {:ok, observable_property} = ObservableProperties.create(user, observable_property(overrides))
+    observable_property
+  end
+
+
   ## ObservablePhenomenons
 
   def observable_phenomenon(overrides \\ %{}) do
     overrides
-    |> Map.put_new_lazy(:has_numerical_value, &float/0)
-    |> Map.put_new_lazy(:is_public, &truth/0)
+    |> Map.put_new_lazy(:label, &name/0)
+    |> Map.put_new_lazy(:formula_quantifier, &float/0)
   end
 
-  def observable_phenomenon_input(observation \\ nil, overrides \\ %{}) do
-    overrides = Map.put_new_lazy(overrides, "hasNumericalValue", &:rand.uniform/0)
+  def observable_phenomenon_input(observable_property \\ nil, overrides \\ %{}) do
+    overrides = overrides
+      |> Map.put_new_lazy("label", &name/0)
+      # |> Map.put_new_lazy("formula_quantifier", &float/0)
 
-    if is_nil(observation) do
+    if is_nil(observable_property) do
       overrides
     else
-      Map.put_new(overrides, "hasUnit", observation.id)
+      Map.put_new(overrides, "choiceOf", observable_property.id)
     end
   end
 
-  def fake_observable_phenomenon!(user, observation, overrides \\ %{}) do
-    {:ok, observable_phenomenon} = ObservablePhenomenons.create(user, observation, observable_phenomenon(overrides))
+  def fake_observable_phenomenon!(user, observable_property \\ nil, overrides \\ %{})
+
+  def fake_observable_phenomenon!(user, nil, overrides) do
+    fake_observable_phenomenon!(user, fake_observable_property!(user), overrides)
+  end
+
+  def fake_observable_phenomenon!(user, observable_property, overrides) do
+    {:ok, observable_phenomenon} = ObservablePhenomenons.create(user, observable_property, observable_phenomenon(overrides))
     observable_phenomenon
   end
 end

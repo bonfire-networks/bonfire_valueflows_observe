@@ -11,7 +11,7 @@ defmodule ValueFlows.Observe.Test.Faking do
 
   import Grumble
 
-  alias ValueFlows.Observe.{ObservablePhenomenon, Observation}
+  alias ValueFlows.Observe.Observation
   alias ValueFlows.Observe.Observations
 
   ## Observation
@@ -109,10 +109,111 @@ defmodule ValueFlows.Observe.Test.Faking do
     obs2
   end
 
-  ## Measures
+
+  ## ObservableProperties
+
+  def observable_property_fields(extra \\ []) do
+    extra ++ ~w(id label note)a
+  end
+
+  @doc """
+  Same as `observable_property_fields/1`, but with the parameter being nested inside of
+  another type.
+  """
+  def observable_property_response_fields(extra \\ []) do
+    [observable_property: observable_property_fields(extra)]
+  end
+
+  def observable_property_subquery(options \\ []) do
+    gen_subquery(:id, :observable_property, &observable_property_fields/1, options)
+  end
+
+  def observable_property_query(options \\ []) do
+    options = Keyword.put_new(options, :id_type, :id)
+    gen_query(:id, &observable_property_subquery/1, options)
+  end
+
+  def observable_properties_pages_query(options \\ []) do
+    params =
+      [
+        after: list_type(:cursor),
+        before: list_type(:cursor),
+        limit: :int
+      ] ++ Keyword.get(options, :params, [])
+
+    gen_query(&observable_properties_pages_subquery/1, [{:params, params} | options])
+  end
+
+  def observable_properties_pages_subquery(options \\ []) do
+    args = [
+      after: var(:after),
+      before: var(:before),
+      limit: var(:limit)
+    ]
+
+    page_subquery(
+      :observable_properties_pages,
+      &observable_property_fields/1,
+      [{:args, args} | options]
+    )
+  end
+
+
+  def create_observable_property_mutation(options \\ []) do
+    [observable_property: type!(:observable_property_create_params)]
+    |> gen_mutation(&create_observable_property_submutation/1, options)
+  end
+
+  def create_observable_property_submutation(options \\ []) do
+    [observable_property: var(:observable_property)]
+    |> gen_submutation(:create_observable_property, &observable_property_response_fields/1, options)
+  end
+
+  def update_observable_property_mutation(options \\ []) do
+    [observable_property: type!(:observable_property_update_params)]
+    |> gen_mutation(&update_observable_property_submutation/1, options)
+  end
+
+  def update_observable_property_submutation(options \\ []) do
+    [observable_property: var(:observable_property)]
+    |> gen_submutation(:update_observable_property, &observable_property_response_fields/1, options)
+  end
+
+  def delete_observable_property_mutation(options \\ []) do
+    [id: type!(:id)]
+    |> gen_mutation(&delete_observable_property_submutation/1, options)
+  end
+
+  def delete_observable_property_submutation(_options \\ []) do
+    field(:delete_observable_property, args: [id: var(:id)])
+  end
+
+
+  def assert_observable_property(%{__struct__: _type} = observable_property) do
+    assert_observable_property(Map.from_struct(observable_property))
+  end
+
+  def assert_observable_property(observable_property) do
+    assert_object(observable_property, :assert_observable_property, label: &assert_binary/1)
+  end
+
+  def assert_observable_property(%{} = observable_property, %{} = observable_property2) do
+    assert_observable_properties_eq(observable_property, assert_observable_property(observable_property2))
+  end
+
+  def assert_observable_properties_eq(%{} = observable_property, %{} = observable_property2) do
+    assert_maps_eq(observable_property, observable_property2, :assert_observable_property, [
+      :label,
+      :published_at,
+      :disabled_at
+    ])
+  end
+
+
+  ## ObservablePhenomenons
 
   def observable_phenomenon_fields(extra \\ []) do
-    extra ++ ~w(id has_numerical_value)a
+    extra ++ ~w(id formula_quantifier)a
   end
 
   @doc """
@@ -168,13 +269,13 @@ defmodule ValueFlows.Observe.Test.Faking do
     |> gen_submutation(:create_observable_phenomenon, &observable_phenomenon_response_fields/1, options)
   end
 
-  def create_observable_phenomenon_with_observation_mutation(options \\ []) do
-    [observable_phenomenon: type!(:observable_phenomenon_create_params), has_observation: type!(:id)]
-    |> gen_mutation(&create_observable_phenomenon_with_observation_submutation/1, options)
+  def create_observable_phenomenon_with_property_mutation(options \\ []) do
+    [observable_phenomenon: type!(:observable_phenomenon_create_params), choice_of: type!(:id)]
+    |> gen_mutation(&create_observable_phenomenon_with_property_submutation/1, options)
   end
 
-  def create_observable_phenomenon_with_observation_submutation(options \\ []) do
-    [observable_phenomenon: var(:observable_phenomenon), has_observation: var(:has_observation)]
+  def create_observable_phenomenon_with_property_submutation(options \\ []) do
+    [observable_phenomenon: var(:observable_phenomenon), choice_of: var(:choice_of)]
     |> gen_submutation(:create_observable_phenomenon, &observable_phenomenon_response_fields/1, options)
   end
 
@@ -188,23 +289,34 @@ defmodule ValueFlows.Observe.Test.Faking do
     |> gen_submutation(:update_observable_phenomenon, &observable_phenomenon_response_fields/1, options)
   end
 
-  def assert_observable_phenomenon(%ObservablePhenomenon{} = observable_phenomenon) do
+  def delete_observable_phenomenon_mutation(options \\ []) do
+    [id: type!(:id)]
+    |> gen_mutation(&delete_observable_phenomenon_submutation/1, options)
+  end
+
+  def delete_observable_phenomenon_submutation(_options \\ []) do
+    field(:delete_observable_phenomenon, args: [id: var(:id)])
+  end
+
+  def assert_observable_phenomenon(%{__struct__: _type} = observable_phenomenon) do
     assert_observable_phenomenon(Map.from_struct(observable_phenomenon))
   end
 
   def assert_observable_phenomenon(observable_phenomenon) do
-    assert_object(observable_phenomenon, :assert_observable_phenomenon, has_numerical_value: &assert_float/1)
+    assert_object(observable_phenomenon, :assert_observable_phenomenon, formula_quantifier: &assert_float/1)
   end
 
-  def assert_observable_phenomenon(%ObservablePhenomenon{} = observable_phenomenon, %{} = observable_phenomenon2) do
+  def assert_observable_phenomenon(%{} = observable_phenomenon, %{} = observable_phenomenon2) do
     assert_observable_phenomenons_eq(observable_phenomenon, assert_observable_phenomenon(observable_phenomenon2))
   end
 
-  def assert_observable_phenomenons_eq(%ObservablePhenomenon{} = observable_phenomenon, %{} = observable_phenomenon2) do
+  def assert_observable_phenomenons_eq(%{} = observable_phenomenon, %{} = observable_phenomenon2) do
     assert_maps_eq(observable_phenomenon, observable_phenomenon2, :assert_observable_phenomenon, [
+      :label,
       :formula_quantifier,
       :published_at,
       :disabled_at
     ])
   end
+
 end
