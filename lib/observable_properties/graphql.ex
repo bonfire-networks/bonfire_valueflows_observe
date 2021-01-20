@@ -32,6 +32,7 @@ defmodule ValueFlows.Observe.ObservablePropertiesGraphQL do
 
   # with pagination
   def observable_properties(page_opts, info) do
+    # TODO: query ONLY catagories with facet==ObservableProperty
     pages =
       if Bonfire.Common.Utils.module_exists?(Bonfire.Classify.GraphQL.CategoryResolver) do
         with {:ok, pages} <- Bonfire.Classify.GraphQL.CategoryResolver.categories(page_opts, info) do
