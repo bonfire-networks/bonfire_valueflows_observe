@@ -77,7 +77,7 @@ defmodule ValueFlows.Observe.Hydration do
         #   resolve: &ObservablePhenomenonsGraphQL.all_observable_phenomenons/2
         # ],
         observable_phenomenon: [
-          resolve: &ObservablePhenomenonsGraphQL.observable_phenomenon/2
+          resolve: &ObservablePhenomenonsGraphQL.get/2
         ]
       },
       valueflows_observe_mutations: %{

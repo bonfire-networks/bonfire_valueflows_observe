@@ -235,7 +235,7 @@ defmodule ValueFlows.Observe.Test.Faking do
     gen_query(:id, &observable_phenomenon_subquery/1, options)
   end
 
-  def observable_phenomenons_pages_query(options \\ []) do
+  def observable_phenomenon_pages_query(options \\ []) do
     params =
       [
         after: list_type(:cursor),
@@ -243,10 +243,10 @@ defmodule ValueFlows.Observe.Test.Faking do
         limit: :int
       ] ++ Keyword.get(options, :params, [])
 
-    gen_query(&observable_phenomenons_pages_subquery/1, [{:params, params} | options])
+    gen_query(&observable_phenomenon_pages_subquery/1, [{:params, params} | options])
   end
 
-  def observable_phenomenons_pages_subquery(options \\ []) do
+  def observable_phenomenon_pages_subquery(options \\ []) do
     args = [
       after: var(:after),
       before: var(:before),
@@ -254,7 +254,7 @@ defmodule ValueFlows.Observe.Test.Faking do
     ]
 
     page_subquery(
-      :observable_phenomenons_pages,
+      :observable_phenomenon_pages,
       &observable_phenomenon_fields/1,
       [{:args, args} | options]
     )

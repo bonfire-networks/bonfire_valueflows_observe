@@ -293,7 +293,7 @@ type ValueflowsObserveMutations {
     observablePhenomenon: ObservablePhenomenonInputParams!
   ): ObservablePhenomenon
   updateObservablePhenomenon(
-    resource: ObservablePhenomenonInputParams!
+    observablePhenomenon: ObservablePhenomenonInputParams!
   ): ObservablePhenomenon
   deleteObservablePhenomenon(id: ID!): Boolean
 }

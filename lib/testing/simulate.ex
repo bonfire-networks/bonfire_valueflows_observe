@@ -82,7 +82,7 @@ defmodule ValueFlows.Observe.Simulate do
   def observable_phenomenon_input(observable_property \\ nil, overrides \\ %{}) do
     overrides = overrides
       |> Map.put_new_lazy("label", &name/0)
-      # |> Map.put_new_lazy("formula_quantifier", &float/0)
+      |> Map.put_new_lazy("formulaQuantifier", &float/0)
 
     if is_nil(observable_property) do
       overrides

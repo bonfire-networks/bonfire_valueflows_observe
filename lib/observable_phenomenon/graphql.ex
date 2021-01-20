@@ -15,9 +15,8 @@ defmodule ValueFlows.Observe.ObservablePhenomenonsGraphQL do
   end
 
   def update_observable_phenomenon(%{observable_phenomenon: %{id: id}} = params, info) do
-    with  {:ok, user} <- GraphQL.current_user_or_not_logged_in(info),
-          {:ok, obj} <- observable_phenomenon(%{id: id}, info) do
-      ValueFlows.Observe.ObservablePhenomenons.update(user, obj, params)
+    with  {:ok, user} <- GraphQL.current_user_or_not_logged_in(info) do
+      ValueFlows.Observe.ObservablePhenomenons.update(user, id, params)
     end
   end
 
@@ -63,7 +62,7 @@ defmodule ValueFlows.Observe.ObservablePhenomenonsGraphQL do
   #   {:ok, Bonfire.Classify.Categories.many()}
   # end
 
-  def observable_phenomenon(%{id: id}, _info) do
+  def get(%{id: id}, _info) do
     ValueFlows.Observe.ObservablePhenomenons.one(id: id)
   end
 

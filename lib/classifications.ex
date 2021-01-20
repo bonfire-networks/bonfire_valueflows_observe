@@ -3,6 +3,7 @@ defmodule ValueFlows.Observe.Classifications do
   alias Bonfire.Classify.Categories
 
   import Bonfire.Common.Utils, only: [maybe_put: 3]
+  alias Bonfire.Common.Utils
   alias Bonfire.Repo
 
   def one(filters) do
@@ -15,12 +16,20 @@ defmodule ValueFlows.Observe.Classifications do
         attrs
           |> to_classification(facet)
           |> maybe_put(:extra_info, extra_info)
+          |> IO.inspect
     )
     |> from_classification()
+    |> IO.inspect
   end
 
-  def update(user, obj, attrs, facet) do
-    Categories.update(user, to_ecto_struct(Bonfire.Classify.Category, obj), to_classification(attrs, facet)) |> from_classification()
+  def update(user, %{id: id}, attrs, facet) do
+    update(user, id, attrs, facet)
+  end
+
+  def update(user, id, attrs, facet) when is_binary(id) do
+    with {:ok, obj} <- Bonfire.Classify.Categories.one(%{id: id}) do
+      Categories.update(user, obj, to_classification(attrs, facet)) |> from_classification()
+    end
   end
 
   def to_classification(attrs, facet \\ nil) do
@@ -55,6 +64,6 @@ defmodule ValueFlows.Observe.Classifications do
   end
 
   def to_ecto_struct(module, map) do
-    struct(module) |> Ecto.Changeset.cast(Map.from_struct(map), module.__schema__(:fields)) |> Ecto.Changeset.apply_changes()
+    struct(module) |> Ecto.Changeset.cast(Utils.stringify_keys(map, false), module.__schema__(:fields)) |> Ecto.Changeset.apply_changes()
   end
 end

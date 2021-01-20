@@ -1,5 +1,5 @@
 # SPDX-License-Identifier: AGPL-3.0-only
-defmodule ValueFlows.Observe.GraphQLTest do
+defmodule ValueFlows.Observe.Phenomenons.GraphQLTest do
   use ValueFlows.Observe.ConnCase, async: true
 
   import Bonfire.Common.Simulation
@@ -23,11 +23,12 @@ defmodule ValueFlows.Observe.GraphQLTest do
 
     test "updates an existing observable_phenomenon" do
       user = fake_user!()
-      observable_phenomenon = fake_observable_phenomenon!(user)
+      observable_property = fake_observable_property!(user)
+      observable_phenomenon = fake_observable_phenomenon!(user, observable_property)
 
       q = update_observable_phenomenon_mutation()
       conn = user_conn(user)
-      vars = %{observable_phenomenon: Map.put(observable_phenomenon_input(), "id", observable_phenomenon.id)}
+      vars = %{observable_phenomenon: Map.put(observable_phenomenon_input(observable_property), "id", observable_phenomenon.id)}
       r = grumble_post_key(q, conn, :update_observable_phenomenon, vars) #|> IO.inspect()
       assert_observable_phenomenon(r)
     end
@@ -46,11 +47,11 @@ defmodule ValueFlows.Observe.GraphQLTest do
       observable_phenomenons = some(5, fn -> fake_observable_phenomenon!(user) end)
       after_observable_phenomenon = List.first(observable_phenomenons)
 
-      q = observable_phenomenons_pages_query()
+      q = observable_phenomenon_pages_query()
       conn = user_conn(user)
       # vars = %{after: after_observable_phenomenon.id, limit: 2}
       vars = %{limit: 2}
-      assert %{"edges" => fetched} = grumble_post_key(q, conn, :observable_phenomenons_pages, vars)
+      assert %{"edges" => fetched} = grumble_post_key(q, conn, :observable_phenomenon_pages, vars)
       assert Enum.count(fetched) == 2
       # assert List.first(fetched)["id"] == after_observable_phenomenon.id
     end

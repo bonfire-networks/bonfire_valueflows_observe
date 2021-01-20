@@ -15,9 +15,8 @@ defmodule ValueFlows.Observe.ObservablePropertiesGraphQL do
 
   def update_observable_property(%{observable_property: %{id: id}} = params, info) do
     IO.inspect(update: params)
-    with  {:ok, user} <- GraphQL.current_user_or_not_logged_in(info),
-          {:ok, obj} <- observable_property(%{id: id}, info) do
-      ValueFlows.Observe.ObservableProperties.update(user, obj, params)
+    with  {:ok, user} <- GraphQL.current_user_or_not_logged_in(info) do
+      ValueFlows.Observe.ObservableProperties.update(user, id, params)
     end
   end
   def update_observable_property(params, info) do
