@@ -121,7 +121,8 @@ defmodule ValueFlows.Observe.Test.Faking do
   another type.
   """
   def observable_property_response_fields(extra \\ []) do
-    [observable_property: observable_property_fields(extra)]
+    # [observable_property: observable_property_fields(extra)]
+    observable_property_fields(extra)
   end
 
   def observable_property_subquery(options \\ []) do
@@ -221,7 +222,8 @@ defmodule ValueFlows.Observe.Test.Faking do
   another type.
   """
   def observable_phenomenon_response_fields(extra \\ []) do
-    [observable_phenomenon: observable_phenomenon_fields(extra)]
+    # [observable_phenomenon: observable_phenomenon_fields(extra)]
+    observable_phenomenon_fields(extra)
   end
 
   def observable_phenomenon_subquery(options \\ []) do

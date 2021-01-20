@@ -1,7 +1,6 @@
 # SPDX-License-Identifier: AGPL-3.0-only
 if Code.ensure_loaded?(Bonfire.GraphQL) do
-defmodule ValueFlows.Observe.GraphQL do
-  use Absinthe.Schema.Notation
+defmodule ValueFlows.Observe.Observations.ObservationsResolvers do
 
   # default to 100 km radius
   @radius_default_distance 100_000
@@ -22,11 +21,6 @@ defmodule ValueFlows.Observe.GraphQL do
   alias ValueFlows.Observe.Observations
   alias ValueFlows.Observe.Observation.Queries
 
-  @schema_file "lib/observe.gql"
-
-  @external_resource @schema_file
-
-  import_sdl(path: @schema_file)
 
   ## resolvers
 
@@ -177,23 +171,6 @@ defmodule ValueFlows.Observe.GraphQL do
     observations_filter_next([param_remove], filter_add, page_opts, filters_acc)
   end
 
-  def track(observation, _, info) do
-    ResolveField.run(%ResolveField{
-      module: __MODULE__,
-      fetcher: :fetch_track,
-      context: observation,
-      info: info
-    })
-  end
-
-  def trace(observation, _, info) do
-    ResolveField.run(%ResolveField{
-      module: __MODULE__,
-      fetcher: :fetch_trace,
-      context: observation,
-      info: info
-    })
-  end
 
   ## fetchers
 
@@ -287,66 +264,8 @@ defmodule ValueFlows.Observe.GraphQL do
   end
   def made_by_edge(_thing, _, _), do: {:ok, nil}
 
-  def fetch_resource_inventoried_as_edge(%{resource_inventoried_as: {:error, _} = error}, _, _),
-    do: error
 
-  def fetch_resource_inventoried_as_edge(%{resource_inventoried_as_id: id} = thing, _, _)
-      when not is_nil(id) do
-    thing = repo().preload(thing, :resource_inventoried_as)
-    {:ok, Map.get(thing, :resource_inventoried_as)}
-  end
 
-  def fetch_resource_inventoried_as_edge(_, _, _) do
-    {:ok, nil}
-  end
-
-  def fetch_to_resource_inventoried_as_edge(%{to_resource_inventoried_as: {:error, _} = error}, _, _),
-   do: error
-
-  def fetch_to_resource_inventoried_as_edge(%{to_resource_inventoried_as_id: id} = thing, _, _)
-    when not is_nil(id) do
-      thing = repo().preload(thing, :to_resource_inventoried_as)
-      {:ok, Map.get(thing, :to_resource_inventoried_as)}
-  end
-
-  def fetch_to_resource_inventoried_as_edge(_, _, _) do
-    {:ok, nil}
-  end
-
-  def fetch_output_of_edge(%{output_of_id: id} = thing, _, _) when is_binary(id) do
-    thing = repo().preload(thing, :output_of)
-    {:ok, Map.get(thing, :output_of)}
-  end
-
-  def fetch_output_of_edge(_, _, _) do
-    {:ok, nil}
-  end
-
-  def fetch_input_of_edge(%{input_of_id: id} = thing, _, _) when is_binary(id) do
-    thing = repo().preload(thing, :observed_during)
-    {:ok, Map.get(thing, :observed_during)}
-  end
-
-  def fetch_input_of_edge(_, _, _) do
-    {:ok, nil}
-  end
-
-  def fetch_triggered_by_edge(%{triggered_by_id: id} = thing, _, _) when is_binary(id) do
-    thing = repo().preload(thing, :triggered_by)
-    {:ok, Map.get(thing, :triggered_by)}
-  end
-
-  def fetch_triggered_by_edge(_, _, _) do
-    {:ok, nil}
-  end
-
-  def fetch_track(_, observation) do
-    Observations.track(observation)
-  end
-
-  def fetch_trace(_, observation) do
-    Observations.trace(observation)
-  end
 
   # Mutations
 
