@@ -47,11 +47,19 @@ defmodule ValueFlows.Observe.ObservationsTest do
     end
   end
 
-  describe "create without context" do
-    test "creates a new observation" do
+  describe "create" do
+    test "new observation with a measure" do
       user = fake_user!()
       assert {:ok, observation = %Observation{}} = Observations.create(user, observation_with_req_fields(user))
       assert observation.creator_id == user.id
+    end
+
+    test "new observation with an observable phenomena" do
+      user = fake_user!()
+      phenon = fake_observable_phenomenon!(user)
+      assert {:ok, observation = %Observation{}} = Observations.create(user, observation(%{}, ValueFlows.Simulate.fake_economic_resource!(user), fake_observable_property!(user), phenon))
+      assert observation.creator_id == user.id
+      assert observation.has_result_id == phenon.id
     end
   end
 

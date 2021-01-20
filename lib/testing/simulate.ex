@@ -30,13 +30,13 @@ defmodule ValueFlows.Observe.Simulate do
   end
 
   def observation_with_req_fields(user, overrides \\ %{}) do
-     observation(overrides, fake_economic_resource!(user), fake_category!(user), fake_measure!(user))
+     observation(overrides, fake_economic_resource!(user), fake_observable_property!(user), fake_measure!(user))
   end
 
   def observation_input(user, base \\ %{}) do
     base
     |> Map.put_new(:has_feature_of_interest, fake_economic_resource!(user).id)
-    |> Map.put_new(:observed_property, fake_category!(user).id)
+    |> Map.put_new(:observed_property, fake_observable_property!(user).id)
     |> Map.put_new(:result_measure, measure_input(fake_unit!(user)))
   end
 

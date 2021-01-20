@@ -32,9 +32,6 @@ defmodule ValueFlows.Observe.Hydration do
         has_feature_of_interest: [
           resolve: &ObservationsResolvers.has_feature_of_interest/3
         ],
-        # observed_observable_property: [
-        #   resolve: &ObservationsResolvers.observed_observable_property_edge/3
-        # ],
         has_result: [
           resolve: &ObservationsResolvers.has_result_edge/3
         ],
@@ -43,9 +40,12 @@ defmodule ValueFlows.Observe.Hydration do
         ]
 
       },
-      observable_property: %{
-        label: [
-          resolve: &ObservationsResolvers.name_as_label/3
+      observable_phenomenon: %{
+        formula_quantifier: [
+          resolve: &ObservablePhenomenonsGraphQL.formula_quantifier_edge/3
+        ],
+        choice_of: [
+          resolve: &ObservablePhenomenonsGraphQL.choice_of_edge/3
         ],
       },
 

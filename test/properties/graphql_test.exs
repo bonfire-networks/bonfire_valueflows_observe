@@ -28,7 +28,7 @@ defmodule ValueFlows.Observe.Properties.GraphQLTest do
       q = update_observable_property_mutation()
       conn = user_conn(user)
       vars = %{observable_property: Map.put(observable_property_input(), "id", observable_property.id)}
-      r = grumble_post_key(q, conn, :update_observable_property, vars, "test", true) #|> IO.inspect()
+      r = grumble_post_key(q, conn, :update_observable_property, vars, "test", false) #|> IO.inspect()
       assert_observable_property(r)
     end
 

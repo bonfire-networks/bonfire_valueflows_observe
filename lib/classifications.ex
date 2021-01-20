@@ -16,10 +16,10 @@ defmodule ValueFlows.Observe.Classifications do
         attrs
           |> to_classification(facet)
           |> maybe_put(:extra_info, extra_info)
-          |> IO.inspect
+          # |> IO.inspect
     )
     |> from_classification()
-    |> IO.inspect
+    # |> IO.inspect
   end
 
   def update(user, %{id: id}, attrs, facet) do
@@ -27,7 +27,7 @@ defmodule ValueFlows.Observe.Classifications do
   end
 
   def update(user, id, attrs, facet) when is_binary(id) do
-    with {:ok, obj} <- Bonfire.Classify.Categories.one(%{id: id}) do
+    with {:ok, obj} <- Bonfire.Classify.Categories.one(id: id) do
       Categories.update(user, obj, to_classification(attrs, facet)) |> from_classification()
     end
   end
@@ -49,6 +49,7 @@ defmodule ValueFlows.Observe.Classifications do
     attrs
       |> maybe_put(:label, Map.get(attrs, :name))
       |> maybe_put(:note, Map.get(attrs, :summary))
+      # |> IO.inspect
   end
 
   def from_classification(other), do: other

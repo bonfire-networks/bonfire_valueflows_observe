@@ -7,14 +7,14 @@ defmodule ValueFlows.Observe.ObservablePhenomenonsGraphQL do
 
   # resolvers
 
-  def create_observable_phenomenon(%{observable_phenomenon: %{choice_of: choice_of}} = params, info) do
+  def create_observable_phenomenon(%{observable_phenomenon: %{choice_of: choice_of} = params}, info) do
     with  {:ok, user} <- GraphQL.current_user_or_not_logged_in(info),
           {:ok, observable_property} <- ValueFlows.Observe.ObservablePropertiesGraphQL.observable_property(%{id: choice_of}, info) do
       ValueFlows.Observe.ObservablePhenomenons.create(user, observable_property, params)
     end
   end
 
-  def update_observable_phenomenon(%{observable_phenomenon: %{id: id}} = params, info) do
+  def update_observable_phenomenon(%{observable_phenomenon: %{id: id} = params}, info) do
     with  {:ok, user} <- GraphQL.current_user_or_not_logged_in(info) do
       ValueFlows.Observe.ObservablePhenomenons.update(user, id, params)
     end
@@ -22,7 +22,7 @@ defmodule ValueFlows.Observe.ObservablePhenomenonsGraphQL do
 
   def delete_observable_phenomenon(%{id: id}, info) do
     with {:ok, user} <- GraphQL.current_user_or_not_logged_in(info),
-          {:ok, observable_phenomenon} <- Bonfire.Classify.Categories.one(%{id: id}),
+          {:ok, observable_phenomenon} <- Bonfire.Classify.Categories.one(id: id),
           # TODO: check permissions
           {:ok, _} <- Bonfire.Classify.Categories.soft_delete(observable_phenomenon) do
       {:ok, true}
@@ -64,6 +64,23 @@ defmodule ValueFlows.Observe.ObservablePhenomenonsGraphQL do
 
   def get(%{id: id}, _info) do
     ValueFlows.Observe.ObservablePhenomenons.one(id: id)
+  end
+
+
+  def formula_quantifier_edge(%{"formula_quantifier" => num} = _thing, _, _) when not is_nil(num) do
+    # IO.inspect(formula_quantifier_edge: num)
+    {:ok, num}
+  end
+  def formula_quantifier_edge(thing, _, _) do
+    {:ok, nil}
+  end
+
+  def choice_of_edge(%{"choice_of" => id} = _thing, _, _) when is_binary(id) do
+    # IO.inspect(choice_of: id)
+    ValueFlows.Observe.ObservableProperties.one(id: id)
+  end
+  def choice_of_edge(thing, _, _) do
+    {:ok, nil}
   end
 
 

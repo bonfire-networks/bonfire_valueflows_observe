@@ -7,25 +7,22 @@ defmodule ValueFlows.Observe.ObservablePropertiesGraphQL do
 
   # resolvers
 
-  def create_observable_property(params, info) do
+  def create_observable_property(%{observable_property: params}, info) do
     with {:ok, user} <- GraphQL.current_user_or_not_logged_in(info) do
       ValueFlows.Observe.ObservableProperties.create(user, params)
     end
   end
 
-  def update_observable_property(%{observable_property: %{id: id}} = params, info) do
-    IO.inspect(update: params)
+  def update_observable_property(%{observable_property: %{id: id} = params}, info) do
+    # IO.inspect(update: params)
     with  {:ok, user} <- GraphQL.current_user_or_not_logged_in(info) do
       ValueFlows.Observe.ObservableProperties.update(user, id, params)
     end
   end
-  def update_observable_property(params, info) do
-    IO.inspect(update2: params)
-  end
 
   def delete_observable_property(%{id: id}, info) do
     with {:ok, user} <- GraphQL.current_user_or_not_logged_in(info),
-          {:ok, observable_property} <- Bonfire.Classify.Categories.one(%{id: id}),
+          {:ok, observable_property} <- Bonfire.Classify.Categories.one(id: id),
           # TODO: check permissions
           {:ok, _} <- Bonfire.Classify.Categories.soft_delete(observable_property) do
       {:ok, true}
