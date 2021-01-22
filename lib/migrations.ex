@@ -43,8 +43,6 @@ defmodule ValueFlows.Observe.Migrations do
       timestamps(inserted_at: false, type: :utc_datetime_usec)
     end
 
-    ValueFlows.Observe.Fixtures.insert()
-
   end
 
   def down do
