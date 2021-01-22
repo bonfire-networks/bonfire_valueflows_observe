@@ -35,7 +35,8 @@ defmodule ValueFlows.Observe.ObservablePhenomenonsGraphQL do
    # TODO: query ONLY catagories with facet==ObservablePhenomenon
    pages =
       if Bonfire.Common.Utils.module_exists?(Bonfire.Classify.GraphQL.CategoryResolver) do
-        with {:ok, pages} <- Bonfire.Classify.GraphQL.CategoryResolver.categories(page_opts, info) do
+
+        with {:ok, pages} <- Bonfire.Classify.GraphQL.CategoryResolver.categories(page_opts, info, {:facet, ValueFlows.Observe.ObservablePhenomenons.facet()}) do
           items =
             Enum.map(
               pages.edges,
@@ -76,8 +77,14 @@ defmodule ValueFlows.Observe.ObservablePhenomenonsGraphQL do
     {:ok, nil}
   end
 
+  def choice_of_edge(%{parent_category: %{id: _} = choice_of} = _thing, _, _) do
+    {:ok, choice_of |> ValueFlows.Observe.Classifications.from_classification() }
+  end
+  def choice_of_edge(%{parent_category_id: id} = _thing, _, _) when is_binary(id) do
+    ValueFlows.Observe.ObservableProperties.one(id: id)
+  end
   def choice_of_edge(%{"choice_of" => id} = _thing, _, _) when is_binary(id) do
-    # IO.inspect(choice_of: id)
+    # deprecated
     ValueFlows.Observe.ObservableProperties.one(id: id)
   end
   def choice_of_edge(thing, _, _) do

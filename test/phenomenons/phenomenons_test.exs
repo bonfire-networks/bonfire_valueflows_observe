@@ -35,6 +35,15 @@ defmodule ValueFlows.Observe.PhenomenonsTest do
       assert_observable_phenomenon(observable_phenomenon)
     end
 
+    test "creates a new observable_phenomenon with a choiceOf property" do
+      user = fake_user!()
+      observable_property = fake_observable_property!(user)
+      assert {:ok, observable_phenomenon} = ObservablePhenomenons.create(user, observable_property, observable_phenomenon())
+      assert_observable_phenomenon(observable_phenomenon)
+      assert observable_phenomenon.parent_category_id == observable_property.id
+    end
+
+
     test "creates two ObservablePhenomenons with the same attributes" do
       user = fake_user!()
       observable_property = fake_observable_property!(user)

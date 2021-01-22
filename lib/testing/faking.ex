@@ -214,7 +214,7 @@ defmodule ValueFlows.Observe.Test.Faking do
   ## ObservablePhenomenons
 
   def observable_phenomenon_fields(extra \\ []) do
-    extra ++ ~w(id formula_quantifier)a
+    extra ++ ~w(id label note formula_quantifier)a
   end
 
   @doc """
@@ -305,7 +305,7 @@ defmodule ValueFlows.Observe.Test.Faking do
   end
 
   def assert_observable_phenomenon(observable_phenomenon) do
-    assert_object(observable_phenomenon, :assert_observable_phenomenon, formula_quantifier: &assert_float/1)
+    assert_object(observable_phenomenon, :assert_observable_phenomenon, label: &assert_binary/1)
   end
 
   def assert_observable_phenomenon(%{} = observable_phenomenon, %{} = observable_phenomenon2) do

@@ -10,7 +10,7 @@ defmodule ValueFlows.Observe.Classifications do
     Categories.one(filters) |> from_classification()
   end
 
-  def create(user, attrs, facet, extra_info \\ %{}) do
+  def create(user, attrs, facet, extra_info \\ nil) do
     Categories.create(
         user,
         attrs
@@ -59,7 +59,7 @@ defmodule ValueFlows.Observe.Classifications do
     obj = Repo.maybe_preload(obj, :profile)
 
     obj
-    |> Map.merge(Map.get(obj, :extra_info, %{}))
+    |> Map.merge(Map.get(obj, :extra_info) || %{})
     |> Map.merge(Map.get(obj, :profile, %{}))
     # |> Map.merge(Map.get(obj, :character))
   end

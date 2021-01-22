@@ -21,6 +21,16 @@ defmodule ValueFlows.Observe.Properties.GraphQLTest do
       assert_observable_property(grumble_post_key(q, conn, :observable_property, %{id: observable_property.id}))
     end
 
+    test "creates an observable property" do
+      user = fake_user!()
+
+      q = create_observable_property_mutation()
+      conn = user_conn(user)
+      vars = %{observable_property: observable_property_input()}
+      r = grumble_post_key(q, conn, :create_observable_property, vars, "test", false) #|> IO.inspect()
+      assert_observable_property(r)
+    end
+
     test "updates an existing observable_property" do
       user = fake_user!()
       observable_property = fake_observable_property!(user)

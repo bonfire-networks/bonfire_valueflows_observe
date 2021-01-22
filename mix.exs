@@ -46,7 +46,7 @@ defmodule ValueFlows.Observe.MixProject do
       updates: ["deps.get", "bonfire.deps.clean", "ecto.migrate", "js.deps.get"],
       "ecto.setup": ["ecto.create", "ecto.migrate", "ecto.seeds"],
       "ecto.reset": ["ecto.drop", "ecto.setup"],
-      test: ["ecto.create --quiet", "ecto.migrate --quiet", "test"]
+      test: ["ecto.create --quiet", "ecto.migrate --quiet", "ecto.seeds", "test"]
     ]
   end
 

@@ -21,6 +21,17 @@ defmodule ValueFlows.Observe.Phenomenons.GraphQLTest do
       assert_observable_phenomenon(grumble_post_key(q, conn, :observable_phenomenon, %{id: observable_phenomenon.id}))
     end
 
+    test "creates a new observable_phenomenon" do
+      user = fake_user!()
+      observable_property = fake_observable_property!(user)
+
+      q = create_observable_phenomenon_mutation()
+      conn = user_conn(user)
+      vars = %{observable_phenomenon: observable_phenomenon_input(observable_property)}
+      r = grumble_post_key(q, conn, :create_observable_phenomenon, vars) #|> IO.inspect()
+      assert_observable_phenomenon(r)
+    end
+
     test "updates an existing observable_phenomenon" do
       user = fake_user!()
       observable_property = fake_observable_property!(user)
