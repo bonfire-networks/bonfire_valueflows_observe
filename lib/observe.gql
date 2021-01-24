@@ -13,6 +13,8 @@ type ObservableProperty {
   A textual description or comment.
   """
   note: String
+
+  hasChoices: [ObservablePhenomenon!]
 }
 
 """
@@ -191,6 +193,7 @@ input ObservablePropertyInputParams {
   A textual description or comment.
   """
   note: String
+
 }
 
 """

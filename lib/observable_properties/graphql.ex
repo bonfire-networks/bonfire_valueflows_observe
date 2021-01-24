@@ -67,6 +67,17 @@ defmodule ValueFlows.Observe.ObservablePropertiesGraphQL do
     ValueFlows.Observe.ObservableProperties.one(id: id)
   end
 
+  def phenomenons_edge(thing, page_info, info) do
+    with {:ok, children} <- Bonfire.Classify.GraphQL.CategoryResolver.category_children(thing, page_info, info) do
+      {:ok, Enum.map(
+              children.edges,
+              &(&1
+                |> ValueFlows.Observe.Classifications.from_classification())
+            )
+      }
+    end
+  end
+
 
 end
 end

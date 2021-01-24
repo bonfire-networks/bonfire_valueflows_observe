@@ -240,7 +240,10 @@ defmodule ValueFlows.Observe.Observations.ObservationsResolvers do
     {:ok, result}
   end
   def has_result_edge(%{result_phenomenon: %{id: id} = result} = _thing, _, _) when not is_nil(id) do
-    {:ok, result}
+    {:ok, result |> ValueFlows.Observe.Classifications.from_classification()}
+  end
+  def has_result_edge(thing, _, _) do
+    has_result_edge(repo.preload(thing, [:result_measure, :result_phenomenon]), nil, nil)
   end
 
   def has_feature_of_interest(%{has_observed_resource: %{id: id} = result} = _thing, _, _) when not is_nil(id) do
@@ -248,6 +251,9 @@ defmodule ValueFlows.Observe.Observations.ObservationsResolvers do
   end
   def has_feature_of_interest(%{has_observed_agent: %{id: id} = result} = _thing, _, _) when not is_nil(id) do
     {:ok, result}
+  end
+  def has_feature_of_interest(_thing, _, _) do
+    {:ok, nil}
   end
 
   def made_by_edge(%{made_by_resource_specification: %{id: id} = result} = _thing, _, _) when not is_nil(id) do
@@ -259,8 +265,8 @@ defmodule ValueFlows.Observe.Observations.ObservationsResolvers do
   def made_by_edge(%{made_by_agent: %{id: id} = result} = _thing, _, _) when not is_nil(id) do
     {:ok, result}
   end
-  def made_by_edge(%{made_by_sensor_id: id} = _thing, _, _) when not is_nil(id) do
-    made_by_edge(repo().preload([:made_by_resource_specification, :made_by_resource, :made_by_agent]), nil, nil)
+  def made_by_edge(%{made_by_sensor_id: id} = thing, _, _) when not is_nil(id) do
+    made_by_edge(repo().preload(thing, [:made_by_resource_specification, :made_by_resource, :made_by_agent]), nil, nil)
   end
   def made_by_edge(_thing, _, _), do: {:ok, nil}
 
@@ -330,10 +336,16 @@ defmodule ValueFlows.Observe.Observations.ObservationsResolvers do
     :economic_resource
   end
 
-  def resolve_observable_result_type(_, _) do
+  def resolve_observable_result_type(%Bonfire.Quantify.Measure{}, _) do
     # TODO
     :measure
   end
+  def resolve_observable_result_type(_item, _) do
+    # IO.inspect(item)
+    # TODO
+    :observable_phenomenon
+  end
+
 
   def resolve_observer_type(_, _) do
     # TODO

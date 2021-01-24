@@ -1,7 +1,7 @@
 defmodule ValueFlows.Observe.Classifications do
 
   alias Bonfire.Classify.Categories
-
+  import Bonfire.Common.Config, only: [repo: 0]
   import Bonfire.Common.Utils, only: [maybe_put: 3]
   alias Bonfire.Common.Utils
   alias Bonfire.Repo
@@ -66,5 +66,9 @@ defmodule ValueFlows.Observe.Classifications do
 
   def to_ecto_struct(module, map) do
     struct(module) |> Ecto.Changeset.cast(Utils.stringify_keys(map, false), module.__schema__(:fields)) |> Ecto.Changeset.apply_changes()
+  end
+
+  def preload(thing, fields) do
+    repo().preload(thing, fields) |> from_classification()
   end
 end

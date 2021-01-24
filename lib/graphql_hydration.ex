@@ -40,6 +40,12 @@ defmodule ValueFlows.Observe.Hydration do
         ]
 
       },
+
+      observable_property: %{
+        has_choices: [
+          resolve: &ObservablePropertiesGraphQL.phenomenons_edge/3
+        ],
+      },
       observable_phenomenon: %{
         formula_quantifier: [
           resolve: &ObservablePhenomenonsGraphQL.formula_quantifier_edge/3
