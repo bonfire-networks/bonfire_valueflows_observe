@@ -27,7 +27,7 @@ type ObservablePhenomenon {
   """
   What observable property does this assessment apply to?
   """
-  choiceOf: ObservableProperty!
+  choiceOf: ObservableProperty
 
   """
   A name for this phenomenon (eg. high, ripe, organic). Unique to each ObservableProperty.

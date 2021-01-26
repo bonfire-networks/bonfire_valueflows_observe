@@ -36,7 +36,7 @@ defmodule ValueFlows.Observe.ObservablePhenomenonsGraphQL do
    pages =
       if Bonfire.Common.Utils.module_exists?(Bonfire.Classify.GraphQL.CategoryResolver) do
 
-        with {:ok, pages} <- Bonfire.Classify.GraphQL.CategoryResolver.categories(page_opts, info, {:facet, ValueFlows.Observe.ObservablePhenomenons.facet()}) do
+        with {:ok, pages} <- Bonfire.Classify.GraphQL.CategoryResolver.categories(Map.put(page_opts, :facet, ValueFlows.Observe.ObservablePhenomenons.facet()), info) do
           items =
             Enum.map(
               pages.edges,
