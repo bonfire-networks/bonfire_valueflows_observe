@@ -160,32 +160,32 @@ defmodule ValueFlows.Observe.Observation.Queries do
     where(q, [observation: c], c.id in ^ids)
   end
 
-  def filter(q, {:context_id, id}) when is_binary(id) do
+  def filter(q, {:context, id}) when is_binary(id) do
     where(q, [observation: c], c.context_id == ^id)
   end
 
-  def filter(q, {:context_id, ids}) when is_list(ids) do
+  def filter(q, {:context, ids}) when is_list(ids) do
     where(q, [observation: c], c.context_id in ^ids)
   end
 
-  def filter(q, {:agent_id, id}) when is_binary(id) do
+  def filter(q, {:agent, id}) when is_binary(id) do
+    where(q, [observation: c], c.provider_id == ^id or c.creator_id == ^id or c.made_by_sensor_id == ^id)
+  end
+
+  def filter(q, {:agent, ids}) when is_list(ids) do
+    where(q, [observation: c], c.provider_id in ^ids or c.creator_id in ^ids or c.made_by_sensor_id in ^ids)
+  end
+
+  def filter(q, {:provider, id}) when is_binary(id) do
     where(q, [observation: c], c.provider_id == ^id)
   end
 
-  def filter(q, {:agent_id, ids}) when is_list(ids) do
-    where(q, [observation: c], c.provider_id in ^ids)
-  end
-
-  def filter(q, {:provider_id, id}) when is_binary(id) do
-    where(q, [observation: c], c.provider_id == ^id)
-  end
-
-  def filter(q, {:provider_id, ids}) when is_list(ids) do
+  def filter(q, {:provider, ids}) when is_list(ids) do
     where(q, [observation: c], c.provider_id in ^ids)
   end
 
 
-  def filter(q, {:at_location_id, at_location_id}) do
+  def filter(q, {:at_location, at_location_id}) do
     q
     |> join_to(:geolocation)
     |> preload(:at_location)
@@ -225,29 +225,36 @@ defmodule ValueFlows.Observe.Observation.Queries do
     filter(q, {:tag_ids, [id]})
   end
 
-  def filter(q, {:resource_inventoried_as_id, ids}) when is_list(ids) do
-    where(q, [observation: c], c.resource_inventoried_as_id in ^ids)
+  def filter(q, {:has_feature_of_interest, ids}) when is_list(ids) do
+    where(q, [observation: c], c.has_feature_of_interest_id in ^ids)
   end
 
-  def filter(q, {:resource_inventoried_as_id, id}) when is_binary(id) do
-    where(q, [observation: c], c.resource_inventoried_as_id == ^id)
+  def filter(q, {:has_feature_of_interest, id}) when is_binary(id) do
+    where(q, [observation: c], c.has_feature_of_interest_id == ^id)
   end
 
-  def filter(q, {:to_resource_inventoried_as_id, ids}) when is_list(ids) do
+  def filter(q, {:made_by_sensor_id, ids}) when is_list(ids) do
     where(q, [observation: c], c.to_resource_inventoried_as_id in ^ids)
   end
 
-  def filter(q, {:to_resource_inventoried_as_id, id}) when is_binary(id) do
+  def filter(q, {:made_by_sensor_id, id}) when is_binary(id) do
     where(q, [observation: c], c.to_resource_inventoried_as_id == ^id)
   end
 
-
-  def filter(q, {:output_of_id, id}) when is_binary(id) do
-    where(q, [observation: c], c.output_of_id == ^id)
+  def filter(q, {:observed_property, id}) when is_binary(id) do
+    where(q, [observation: c], c.observed_property_id == ^id)
   end
 
-  def filter(q, {:input_of_id, id}) when is_binary(id) do
-    where(q, [observation: c], c.input_of_id == ^id)
+  def filter(q, {:observed_property, id}) when is_binary(id) do
+    where(q, [observation: c], c.observed_property_id == ^id)
+  end
+
+  def filter(q, {:observed_during, id}) when is_binary(id) do
+    where(q, [observation: c], c.observed_during_id == ^id)
+  end
+
+  def filter(q, {:observed_during, id}) when is_binary(id) do
+    where(q, [observation: c], c.observed_during_id == ^id)
   end
 
   ## by ordering
@@ -257,8 +264,7 @@ defmodule ValueFlows.Observe.Observation.Queries do
   end
 
   def filter(q, {:order, [desc: :id]}) do
-    order_by(q, [observation: c, id: id],
-      desc: coalesce(id.count, 0),
+    order_by(q, [observation: c],
       desc: c.id
     )
   end

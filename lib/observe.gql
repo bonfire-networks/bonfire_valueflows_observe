@@ -258,6 +258,13 @@ type ValueflowsObserveQueries {
     limit: Int
     before: [Cursor!]
     after: [Cursor!]
+
+    hasFeatureOfInterest: [ID!]
+    observedProperty: [ID!]
+    agent: [ID!]
+    provider: [ID!]
+    madeBySensor: [ID!]
+    observedDuring: [ID!]
   ): ObservationPage!
 
 

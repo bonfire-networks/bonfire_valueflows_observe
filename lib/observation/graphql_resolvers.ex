@@ -34,6 +34,7 @@ defmodule ValueFlows.Observe.Observations.ObservationsResolvers do
   end
 
   def observations(page_opts, info) do
+    # IO.inspect(page_opts)
     ResolveRootPage.run(%ResolveRootPage{
       module: __MODULE__,
       fetcher: :fetch_observations,
@@ -48,130 +49,6 @@ defmodule ValueFlows.Observe.Observations.ObservationsResolvers do
     Observations.many([:default])
   end
 
-  def observations_filtered(page_opts, _ \\ nil) do
-    observations_filter(page_opts, [])
-  end
-
-  # TODO: support several filters combined, plus pagination on filtered queries
-
-  defp observations_filter(%{agent: id} = page_opts, filters_acc) do
-    observations_filter_next(:agent, [agent_id: id], page_opts, filters_acc)
-  end
-
-  defp observations_filter(%{provider: id} = page_opts, filters_acc) do
-    observations_filter_next(:provider, [provider_id: id], page_opts, filters_acc)
-  end
-
-  defp observations_filter(%{in_scope_of: context_id} = page_opts, filters_acc) do
-    observations_filter_next(:in_scope_of, [context_id: context_id], page_opts, filters_acc)
-  end
-
-  defp observations_filter(%{tag_ids: tag_ids} = page_opts, filters_acc) do
-    observations_filter_next(:tag_ids, [tag_ids: tag_ids], page_opts, filters_acc)
-  end
-
-  defp observations_filter(%{at_location: at_location_id} = page_opts, filters_acc) do
-    observations_filter_next(:at_location, [at_location_id: at_location_id], page_opts, filters_acc)
-  end
-
-  defp observations_filter(
-         %{
-           geolocation: %{
-             near_point: %{lat: lat, long: long},
-             distance: %{meters: distance_meters}
-           }
-         } = page_opts,
-         filters_acc
-       ) do
-    observations_filter_next(
-      :geolocation,
-      {
-        :near_point,
-        %Geo.Point{coordinates: {lat, long}, srid: 4326},
-        :distance_meters,
-        distance_meters
-      },
-      page_opts,
-      filters_acc
-    )
-  end
-
-  defp observations_filter(
-         %{
-           geolocation: %{near_address: address} = geolocation
-         } = page_opts,
-         filters_acc
-       ) do
-    with {:ok, coords} <- Geocoder.call(address) do
-      observations_filter(
-        Map.merge(
-          page_opts,
-          %{
-            geolocation:
-              Map.merge(geolocation, %{
-                near_point: %{lat: coords.lat, long: coords.lon},
-                distance: Map.get(geolocation, :distance, %{meters: @radius_default_distance})
-              })
-          }
-        ),
-        filters_acc
-      )
-    else
-      _ ->
-        observations_filter_next(
-          :geolocation,
-          [],
-          page_opts,
-          filters_acc
-        )
-    end
-  end
-
-  defp observations_filter(
-         %{
-           geolocation: geolocation
-         } = page_opts,
-         filters_acc
-       ) do
-    observations_filter(
-      Map.merge(
-        page_opts,
-        %{
-          geolocation:
-            Map.merge(geolocation, %{
-              # default to 100 km radius
-              distance: %{meters: @radius_default_distance}
-            })
-        }
-      ),
-      filters_acc
-    )
-  end
-
-  defp observations_filter(
-         _,
-         filters_acc
-       ) do
-    # finally, if there's no more known params to acumulate, query with the filters
-    Observations.many(filters_acc)
-  end
-
-  defp observations_filter_next(param_remove, filter_add, page_opts, filters_acc)
-       when is_list(param_remove) and is_list(filter_add) do
-    observations_filter(Map.drop(page_opts, param_remove), filters_acc ++ filter_add)
-  end
-
-  defp observations_filter_next(param_remove, filter_add, page_opts, filters_acc)
-       when not is_list(filter_add) do
-    observations_filter_next(param_remove, [filter_add], page_opts, filters_acc)
-  end
-
-  defp observations_filter_next(param_remove, filter_add, page_opts, filters_acc)
-       when not is_list(param_remove) do
-    observations_filter_next([param_remove], filter_add, page_opts, filters_acc)
-  end
-
-
   ## fetchers
 
   def fetch_observation(info, id) do
@@ -183,36 +60,6 @@ defmodule ValueFlows.Observe.Observations.ObservationsResolvers do
     ])
   end
 
-  def agent_observations(%{id: agent}, %{} = _page_opts, _info) do
-    observations_filtered(%{agent: agent})
-  end
-
-  def agent_observations(_, _page_opts, _info) do
-    {:ok, nil}
-  end
-
-  def agent_observations_edge(%{agent: agent}, %{} = page_opts, info) do
-    ResolvePages.run(%ResolvePages{
-      module: __MODULE__,
-      fetcher: :fetch_agent_observations_edge,
-      context: agent,
-      page_opts: page_opts,
-      info: info
-    })
-  end
-
-  def fetch_agent_observations_edge(page_opts, info, ids) do
-    list_observations(
-      page_opts,
-      [
-        :default,
-        agent_id: ids,
-        user: GraphQL.current_user(info)
-      ],
-      nil,
-      nil
-    )
-  end
 
   def list_observations(page_opts, base_filters, _data_filters, _cursor_type) do
     FetchPage.run(%FetchPage{
@@ -232,7 +79,8 @@ defmodule ValueFlows.Observe.Observations.ObservationsResolvers do
       base_filters: [
         :default,
         user: GraphQL.current_user(info)
-      ]
+      ],
+      data_filters: ValueFlows.Util.GraphQL.fetch_data_filters(info)
     })
   end
 

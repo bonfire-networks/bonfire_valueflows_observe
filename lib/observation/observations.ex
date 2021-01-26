@@ -206,6 +206,7 @@ defmodule ValueFlows.Observe.Observations do
       :context_id,
       attrs |> Map.get(:in_scope_of, []) |> maybe(&List.first/1)
     )
+    |> Map.put_new(:result_time, DateTime.utc_now())
     |> maybe_put(:provider_id, attr_get_id(attrs, :provider))
     |> maybe_put(:made_by_sensor_id, attr_get_id(attrs, :made_by_sensor_id))
     |> maybe_put(:has_feature_of_interest_id, attr_get_id(attrs, :has_feature_of_interest))

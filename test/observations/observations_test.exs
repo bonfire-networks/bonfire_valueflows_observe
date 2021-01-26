@@ -29,10 +29,10 @@ defmodule ValueFlows.Observe.ObservationsTest do
       assert {:ok, fetched} = Observations.one(id: observation.id)
       assert_observation(observation, fetched)
 
-      assert {:ok, fetched} = Observations.one(provider_id: user.id)
+      assert {:ok, fetched} = Observations.one(provider: user.id)
       assert_observation(observation, fetched)
 
-      assert {:ok, fetched} = Observations.one(context_id: context.id)
+      assert {:ok, fetched} = Observations.one(context: context.id)
       assert_observation(observation, fetched)
     end
 

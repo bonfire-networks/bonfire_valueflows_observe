@@ -35,11 +35,11 @@ defmodule ValueFlows.Observe.Observation do
     belongs_to(:has_observed_resource, EconomicResource, foreign_key: :has_feature_of_interest_id, define_field: false)
     belongs_to(:has_observed_agent, @user, foreign_key: :has_feature_of_interest_id, define_field: false)
 
-    belongs_to(:observed_property, Bonfire.Classify.Category) # TBD
+    belongs_to(:observed_property, Bonfire.Classify.Category)
 
     belongs_to(:has_result, Pointers.Pointer)
     belongs_to(:result_measure, Bonfire.Quantify.Measure, on_replace: :nilify, foreign_key: :has_result_id, define_field: false)
-    belongs_to(:result_phenomenon, Bonfire.Classify.Category, on_replace: :nilify, foreign_key: :has_result_id, define_field: false) # TBD (category with extra JSONB field?)
+    belongs_to(:result_phenomenon, Bonfire.Classify.Category, on_replace: :nilify, foreign_key: :has_result_id, define_field: false)
 
     belongs_to(:observed_during, Process)
 
