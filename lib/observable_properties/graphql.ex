@@ -14,7 +14,7 @@ defmodule ValueFlows.Observe.ObservablePropertiesGraphQL do
   end
 
   def update_observable_property(%{observable_property: %{id: id} = params}, info) do
-    # IO.inspect(update: params)
+    #IO.inspect(update: params)
     with  {:ok, user} <- GraphQL.current_user_or_not_logged_in(info) do
       ValueFlows.Observe.ObservableProperties.update(user, id, params)
     end
@@ -36,7 +36,7 @@ defmodule ValueFlows.Observe.ObservablePropertiesGraphQL do
     pages =
       if Bonfire.Common.Utils.module_exists?(Bonfire.Classify.GraphQL.CategoryResolver) do
         with {:ok, pages} <- Bonfire.Classify.GraphQL.CategoryResolver.categories(Map.put(page_opts, :facet, ValueFlows.Observe.ObservableProperties.facet()), info) do
-          # IO.inspect(observable_properties: pages)
+          #IO.inspect(observable_properties: pages)
           items =
             Enum.map(
               pages.edges,

@@ -55,7 +55,7 @@ defmodule ValueFlows.Observe.Classifications do
   def from_classification(other), do: other
 
   def flatten(obj) do
-    # IO.inspect(obj)
+    #IO.inspect(obj)
     obj = Repo.maybe_preload(obj, :profile)
 
     obj

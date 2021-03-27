@@ -70,7 +70,7 @@ defmodule ValueFlows.Observe.ObservablePhenomenonsGraphQL do
 
 
   def formula_quantifier_edge(%{"formula_quantifier" => num} = _thing, _, _) when not is_nil(num) do
-    # IO.inspect(formula_quantifier_edge: num)
+    #IO.inspect(formula_quantifier_edge: num)
     {:ok, num}
   end
   def formula_quantifier_edge(thing, _, _) do

@@ -34,7 +34,7 @@ defmodule ValueFlows.Observe.Observations.ObservationsResolvers do
   end
 
   def observations(page_opts, info) do
-    # IO.inspect(page_opts)
+    #IO.inspect(page_opts)
     ResolveRootPage.run(%ResolveRootPage{
       module: __MODULE__,
       fetcher: :fetch_observations,
@@ -189,7 +189,7 @@ defmodule ValueFlows.Observe.Observations.ObservationsResolvers do
     :measure
   end
   def resolve_observable_result_type(_item, _) do
-    # IO.inspect(item)
+    #IO.inspect(item)
     # TODO
     :observable_phenomenon
   end

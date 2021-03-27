@@ -38,7 +38,7 @@ defmodule ValueFlows.Observe.PropertiesTest do
       user = fake_user!()
       assert {:ok, observable_property} = ObservableProperties.create(user, observable_property())
       assert_observable_property(observable_property)
-      # IO.inspect(observable_property)
+      #IO.inspect(observable_property)
       assert observable_property.parent_category_id == ValueFlows.Observe.ObservableProperties.id()
     end
 
