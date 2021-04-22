@@ -242,7 +242,7 @@ defmodule ValueFlows.Observe.Observations do
     %{
       "index_type" => "Observation",
       "id" => obj.id,
-      # "canonicalUrl" => obj.character.canonical_url,
+      # "url" => obj.character.canonical_url,
       # "icon" => icon,
       "summary" => Map.get(obj, :note),
       "published_at" => obj.published_at,
