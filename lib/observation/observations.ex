@@ -120,8 +120,7 @@ defmodule ValueFlows.Observe.Observations do
            {:ok, observation} <- repo().insert(cs |> Observation.create_changeset_validate()),
            observation = preload_all(observation),
            act_attrs = %{verb: "created", is_local: true},
-           {:ok, activity} <- ValueFlows.Util.activity_create(creator, observation, act_attrs),
-           :ok <- ValueFlows.Util.publish(creator, observation, activity, :created) do
+           {:ok, activity} <- ValueFlows.Util.publish(creator, :observe, observation) do
         indexing_object_format(observation) |> ValueFlows.Util.index_for_search()
         {:ok, observation}
       end
