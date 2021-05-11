@@ -82,7 +82,7 @@ defmodule ValueFlows.Observe.Observation do
       creator_id: creator.id,
       is_public: true
     )
-    |> change_measures(attrs)
+    |> ValueFlows.Util.change_measures(attrs, [:result_measure])
     |> common_changeset()
   end
 
@@ -94,15 +94,8 @@ defmodule ValueFlows.Observe.Observation do
   def update_changeset(%Observation{} = event, attrs) do
     event
     |> Changeset.cast(attrs, @cast)
-    |> change_measures(attrs)
+    |> ValueFlows.Util.change_measures(attrs, [:result_measure])
     |> common_changeset()
-  end
-
-  def change_measures(changeset, %{result_measure: %{} = result_measure}) do
-    Changeset.put_assoc(changeset, :result_measure, result_measure)
-  end
-  def change_measures(changeset, _) do
-    changeset
   end
 
   defp common_changeset(changeset) do
