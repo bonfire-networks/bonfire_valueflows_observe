@@ -239,7 +239,7 @@ defmodule ValueFlows.Observe.Observations do
 
   def indexing_object_format(obj) do
     %{
-      "index_type" => "Observation",
+      "index_type" => "ValueFlows.Observe.Observation",
       "id" => obj.id,
       # "url" => obj.character.canonical_url,
       # "icon" => icon,
