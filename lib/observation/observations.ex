@@ -142,7 +142,7 @@ defmodule ValueFlows.Observe.Observations do
 
       with :ok <- validate_user_involvement(user, observation),
            {:ok, observation} <- repo().update(Observation.update_changeset(observation, attrs)),
-           :ok <- ValueFlows.Util.publish(observation, :updated) do
+           {:ok, _} <- ValueFlows.Util.publish(observation, :updated) do
         {:ok, observation}
       end
     end)
@@ -231,7 +231,7 @@ defmodule ValueFlows.Observe.Observations do
   def soft_delete(%Observation{} = observation) do
     repo().transact_with(fn ->
       with {:ok, observation} <- Bonfire.Repo.Delete.soft_delete(observation),
-           :ok <- ValueFlows.Util.publish(observation, :deleted) do
+           {:ok, _} <- ValueFlows.Util.publish(observation, :deleted) do
         {:ok, observation}
       end
     end)
