@@ -15,7 +15,7 @@ defmodule ValueFlows.Observe.Observation.Queries do
     from(c in Observation, as: :observation)
   end
 
-  def query(filters), do: filter(Observation, filters)
+  def query(filters), do: query(Observation, filters)
 
   def query(q, filters), do: filter(query(q), filters)
 
