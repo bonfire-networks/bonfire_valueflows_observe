@@ -35,6 +35,8 @@ defmodule ValueFlows.Observe.PropertiesTest do
     end
 
     test "creates a new observable_property within the taxonomy" do
+      ValueFlows.Observe.Seeds.up(nil) # requires seeds
+
       user = fake_user!()
       assert {:ok, observable_property} = ObservableProperties.create(user, observable_property())
       assert_observable_property(observable_property)
