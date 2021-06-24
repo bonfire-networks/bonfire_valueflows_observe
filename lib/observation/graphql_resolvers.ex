@@ -139,7 +139,7 @@ defmodule ValueFlows.Observe.Observations.ObservationsResolvers do
   def update_observation(%{observation: %{id: id} = changes}, info) do
     with {:ok, user} <- GraphQL.current_user_or_not_logged_in(info),
          {:ok, observation} <- observation(%{id: id}, info),
-         :ok <- ensure_update_permission(user, observation),
+         :ok <- ValueFlows.Util.ensure_edit_permission(user, observation),
         #  {:ok, uploads} <- ValueFlows.Util.GraphQL.maybe_upload(user, changes, info),
         #  changes = Map.merge(changes, uploads),
          {:ok, observation} <- Observations.update(user, observation, changes) do
@@ -151,20 +151,13 @@ defmodule ValueFlows.Observe.Observations.ObservationsResolvers do
     repo().transact_with(fn ->
       with {:ok, user} <- GraphQL.current_user_or_not_logged_in(info),
            {:ok, observation} <- observation(%{id: id}, info),
-           :ok <- ensure_update_permission(user, observation),
+           :ok <- ValueFlows.Util.ensure_edit_permission(user, observation),
            {:ok, _} <- Observations.soft_delete(observation) do
         {:ok, true}
       end
     end)
   end
 
-  def ensure_update_permission(user, observation) do
-    if ValueFlows.Util.is_admin(user) or observation.creator_id == user.id do
-      :ok
-    else
-      GraphQL.not_permitted("update")
-    end
-  end
 
   # defp validate_agent(pointer) do
   #   if Pointers.table!(pointer).schema in valid_contexts() do
