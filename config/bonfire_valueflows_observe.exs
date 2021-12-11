@@ -1,4 +1,4 @@
-use Mix.Config
+import Config
 
 config :bonfire_valueflows_observe,
   templates_path: "lib"
