@@ -1,4 +1,4 @@
-# Bonfire:ValueFlows:Observe
+# Bonfire.ValueFlows.Observe
 
 An extension for [ValueFlows](https://valueflo.ws/) on [Bonfire](https://bonfire.cafe/) that handles:
 
