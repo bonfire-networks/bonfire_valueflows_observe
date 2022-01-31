@@ -2,7 +2,7 @@ defmodule ValueFlows.Observe.Classifications do
 
   alias Bonfire.Classify.Categories
   import Bonfire.Common.Config, only: [repo: 0]
-  import Bonfire.Common.Utils, only: [maybe_put: 3]
+  use Bonfire.Common.Utils, only: [maybe_put: 3]
   alias Bonfire.Common.Utils
   alias Bonfire.Repo
 
