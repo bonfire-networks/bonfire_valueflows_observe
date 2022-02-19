@@ -17,7 +17,7 @@ defmodule ValueFlows.Observe.Observations do
 
   import Bonfire.Fail.Error
 
-  require Logger
+  import Where
 
   def cursor(), do: &[&1.id]
   def test_cursor(), do: &[&1["id"]]

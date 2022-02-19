@@ -3,7 +3,7 @@ if Code.ensure_loaded?(Bonfire.GraphQL) do
 defmodule ValueFlows.Observe.ObservablePropertiesGraphQL do
   alias Bonfire.GraphQL
 
-  require Logger
+  import Where
 
   # resolvers
 

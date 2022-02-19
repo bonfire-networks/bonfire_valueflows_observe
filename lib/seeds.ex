@@ -1,7 +1,7 @@
 defmodule ValueFlows.Observe.Seeds do
   import Ecto.Query
   import Bonfire.Common.Config, only: [repo: 0]
-  require Logger
+  import Where
 
   alias ValueFlows.Observe.Classifications
   alias ValueFlows.Observe.ObservableProperties

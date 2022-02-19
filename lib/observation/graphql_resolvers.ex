@@ -5,7 +5,7 @@ defmodule ValueFlows.Observe.Observations.ObservationsResolvers do
   # default to 100 km radius
   @radius_default_distance 100_000
 
-  require Logger
+  import Where
 
   import Bonfire.Common.Config, only: [repo: 0]
 
