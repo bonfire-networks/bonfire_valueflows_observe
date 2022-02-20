@@ -15,7 +15,7 @@ defmodule ValueFlows.Observe.Observations do
 
   alias ValueFlows.Observe.Process.Processes
 
-  import Bonfire.Fail.Error
+  import Bonfire.Fail
 
   import Where
 
@@ -168,7 +168,7 @@ defmodule ValueFlows.Observe.Observations do
   end
 
   defp validate_user_involvement(_creator, _observation) do
-   {:error, error(403, "You cannot do this if you are not provider.")}
+   {:error, fail(403, "You cannot do this if you are not provider.")}
   end
 
   defp validate_provider_is_primary_accountable(
@@ -190,7 +190,7 @@ defmodule ValueFlows.Observe.Observations do
     if is_nil(resource.primary_accountable_id) or provider_id == resource.primary_accountable_id do
       :ok
     else
-      {:error, error(403, "You cannot do this since the provider is not accountable for the resource.")}
+      {:error, fail(403, "You cannot do this since the provider is not accountable for the resource.")}
     end
   end
 
