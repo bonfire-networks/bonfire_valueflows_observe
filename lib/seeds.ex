@@ -8,7 +8,7 @@ defmodule ValueFlows.Observe.Seeds do
   alias ValueFlows.Observe.ObservablePhenomenons
 
   def up(_repo) do
-    Logger.notice("Seeding valueflows_observe")
+    debug("Seeding valueflows_observe")
 
     Classifications.create(nil, %{id: ObservableProperties.id(), label: "Observable Properties", username: ObservableProperties.facet()}, "Facet")
 
@@ -17,7 +17,7 @@ defmodule ValueFlows.Observe.Seeds do
   end
 
   def down(_repo) do
-    Logger.notice("Un-seeding valueflows_observe")
+    debug("Un-seeding valueflows_observe")
 
     # id = ObservableProperties.id()
     # from(x in Pointers.Pointer, where: x.id == ^id) |> repo().delete_all
