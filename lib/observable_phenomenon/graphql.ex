@@ -1,7 +1,7 @@
 # SPDX-License-Identifier: AGPL-3.0-only
-if Code.ensure_loaded?(Bonfire.GraphQL) do
+if Code.ensure_loaded?(Bonfire.API.GraphQL) do
 defmodule ValueFlows.Observe.ObservablePhenomenonsGraphQL do
-  alias Bonfire.GraphQL
+  alias Bonfire.API.GraphQL
 
   import Where
 

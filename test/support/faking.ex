@@ -5,8 +5,8 @@ defmodule ValueFlows.Observe.Test.Faking do
   import ValueFlows.Observe.Simulate
 
   # import ExUnit.Assertions
-  import Bonfire.GraphQL.Test.GraphQLAssertions
-  import Bonfire.GraphQL.Test.GraphQLFields
+  import Bonfire.API.GraphQL.Test.GraphQLAssertions
+  import Bonfire.API.GraphQL.Test.GraphQLFields
   # import CommonsPub.Utils.Trendy
 
   import Grumble

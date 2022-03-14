@@ -7,7 +7,7 @@ defmodule ValueFlows.Observe.PropertiesTest do
   # import CommonsPub.Utils.Simulate
   # import CommonsPub.Web.Test.Orderings
   # import CommonsPub.Web.Test.Automaton
-  # import Bonfire.GraphQL.Test.GraphQLAssertions
+  # import Bonfire.API.GraphQL.Test.GraphQLAssertions
   # import Bonfire.Common.Enums
   # import Grumble
   # import Zest

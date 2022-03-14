@@ -1,7 +1,7 @@
-if Code.ensure_loaded?(Bonfire.GraphQL) do
+if Code.ensure_loaded?(Bonfire.API.GraphQL) do
 defmodule ValueFlows.Observe.Hydration do
 
-  # alias Bonfire.GraphQL.CommonResolver
+  # alias Bonfire.API.GraphQL.CommonResolver
   alias ValueFlows.Observe.Observations.ObservationsResolvers
   alias ValueFlows.Observe.ObservablePropertiesGraphQL
   alias ValueFlows.Observe.ObservablePhenomenonsGraphQL
