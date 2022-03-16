@@ -34,7 +34,7 @@ defmodule ValueFlows.Observe.ObservablePropertiesGraphQL do
   def observable_properties(page_opts, info) do
     # TODO: query ONLY catagories with facet==ObservableProperty
     pages =
-      if Bonfire.Common.Utils.module_enabled?(Bonfire.Classify.GraphQL.CategoryResolver) do
+      if Bonfire.Common.Extend.module_enabled?(Bonfire.Classify.GraphQL.CategoryResolver) do
         with {:ok, pages} <- Bonfire.Classify.GraphQL.CategoryResolver.categories(Map.put(page_opts, :facet, ValueFlows.Observe.ObservableProperties.facet()), info) do
           #IO.inspect(observable_properties: pages)
           items =
