@@ -107,7 +107,7 @@ defmodule ValueFlows.Observe.Observations do
       observation_attrs
       # fallback if none indicated
       |> Map.put_new(:provider, creator)
-      |> prepare_attrs()
+      |> prepare_attrs(creator)
 
     cs = Observation.create_changeset(creator, new_observation_attrs)
 
@@ -138,7 +138,7 @@ defmodule ValueFlows.Observe.Observations do
   def update(user, %Observation{} = observation, attrs) do
     repo().transact_with(fn ->
       observation = preload_all(observation)
-      attrs = prepare_attrs(attrs)
+      attrs = prepare_attrs(attrs, observation.creator)
 
       with :ok <- validate_user_involvement(user, observation),
            {:ok, observation} <- repo().update(Observation.update_changeset(observation, attrs)),
@@ -199,14 +199,14 @@ defmodule ValueFlows.Observe.Observations do
   end
 
 
-  defp prepare_attrs(attrs) do
+  defp prepare_attrs(attrs, creator \\ nil) do
     attrs
     |> maybe_put(
       :context_id,
       attrs |> Map.get(:in_scope_of, []) |> maybe(&List.first/1)
     )
     |> Map.put_new(:result_time, DateTime.utc_now())
-    |> maybe_put(:provider_id, attr_get_id(attrs, :provider))
+    |> maybe_put(:provider_id, Util.attr_get_agent(attrs, :provider, creator))
     |> maybe_put(:made_by_sensor_id, attr_get_id(attrs, :made_by_sensor_id))
     |> maybe_put(:has_feature_of_interest_id, attr_get_id(attrs, :has_feature_of_interest))
     |> maybe_put(:observed_property_id, attr_get_id(attrs, :observed_property))
