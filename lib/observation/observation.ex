@@ -1,6 +1,6 @@
 defmodule ValueFlows.Observe.Observation do
   use Pointers.Pointable,
-    otp_app: :commons_pub,
+    otp_app: :bonfire_valueflows_observe,
     source: "vf_observe_observation",
     table_id: "0BSERVEDPHEN0MEN0N0RMEASVR"
 
