@@ -230,7 +230,7 @@ defmodule ValueFlows.Observe.Observations do
 
   def soft_delete(%Observation{} = observation) do
     repo().transact_with(fn ->
-      with {:ok, observation} <- Bonfire.Repo.Delete.soft_delete(observation),
+      with {:ok, observation} <- Bonfire.Common.Repo.Delete.soft_delete(observation),
            {:ok, _} <- ValueFlows.Util.publish(observation, :deleted) do
         {:ok, observation}
       end

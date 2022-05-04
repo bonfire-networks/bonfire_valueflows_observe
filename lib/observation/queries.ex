@@ -3,7 +3,7 @@ defmodule ValueFlows.Observe.Observation.Queries do
   alias ValueFlows.Observe.Observation
   # alias ValueFlows.Observe.Observations
   @user Bonfire.Common.Config.get!(:user_schema)
-  import Bonfire.Repo.Common, only: [match_admin: 0]
+  import Bonfire.Common.Repo.Utils, only: [match_admin: 0]
   import Ecto.Query
   import Geo.PostGIS
 

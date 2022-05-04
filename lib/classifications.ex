@@ -4,7 +4,7 @@ defmodule ValueFlows.Observe.Classifications do
   import Bonfire.Common.Config, only: [repo: 0]
   use Bonfire.Common.Utils, only: [maybe_put: 3]
   alias Bonfire.Common.Utils
-  alias Bonfire.Repo
+  alias Bonfire.Common.Repo
 
   def one(filters) do
     Categories.one(filters) |> from_classification()

@@ -25,7 +25,7 @@ defmodule ValueFlows.Observe.Seeds do
     # Bonfire.Classify.Categories.soft_delete(ObservableProperties.facet())
 
     with {:ok, c} <- ObservableProperties.facet() |> Bonfire.Classify.Categories.get() do
-      Bonfire.Repo.Delete.hard_delete(c)
+      Bonfire.Common.Repo.Delete.hard_delete(c)
     end
 
     name = ObservableProperties.facet()
