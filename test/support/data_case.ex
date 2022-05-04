@@ -22,7 +22,7 @@ defmodule ValueFlows.Observe.DataCase do
       import Ecto
       import Ecto.Changeset
       import Ecto.Query
-      import ValueFlows.Observe.DataCase
+      # import ValueFlows.Observe.DataCase
     end
   end
 
