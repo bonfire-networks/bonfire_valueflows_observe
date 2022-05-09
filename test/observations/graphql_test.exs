@@ -1,12 +1,10 @@
 # SPDX-License-Identifier: AGPL-3.0-only
 defmodule ValueFlows.Observe.ObservationsGraphQLTest do
   use ValueFlows.Observe.ConnCase, async: true
-
   import Bonfire.Common.Simulation
   import ValueFlows.Observe.Simulate
   import ValueFlows.Observe.Test.Faking
   # import CommonsPub.Utils.Trendy
-
   alias ValueFlows.Observe.Observations
 
   describe "observation" do

@@ -22,6 +22,8 @@ defmodule ValueFlows.Observe.DataCase do
       import Ecto
       import Ecto.Changeset
       import Ecto.Query
+
+      Bonfire.Common.Extend.quoted_import_if_enabled(Bonfire.Me.Fake)
       # import ValueFlows.Observe.DataCase
     end
   end

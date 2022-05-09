@@ -27,6 +27,7 @@ defmodule ValueFlows.Observe.ConnCase do
       import ValueFlows.Observe.Test.ConnHelpers
       # import ValueFlows.Observe.Test.FakeHelpers
 
+      import Bonfire.Me.Fake
 
       alias ValueFlows.Observe.Fake
       alias ValueFlows.Observe.Web.Router.Helpers, as: Routes
