@@ -7,7 +7,7 @@ defmodule ValueFlows.Observe.Observations do
   # alias Bonfire.API.GraphQL
   alias Bonfire.API.GraphQL.{Fields, Page}
 
-  @user Bonfire.Common.Config.get!(:user_schema)
+  @user Application.compile_env!(:bonfire, :user_schema)
 
   alias ValueFlows.Observe.Observation
   alias ValueFlows.Observe.EconomicResource.EconomicResources

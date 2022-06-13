@@ -7,7 +7,7 @@ defmodule ValueFlows.Observe.Observation do
   import Bonfire.Common.Repo.Utils, only: [change_public: 1, change_disabled: 1]
 
   alias Ecto.Changeset
-  @user Bonfire.Common.Config.get!(:user_schema)
+  @user Application.compile_env!(:bonfire, :user_schema)
 
   alias ValueFlows.Knowledge.ResourceSpecification
   alias ValueFlows.Observe.Observation
