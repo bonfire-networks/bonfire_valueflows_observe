@@ -3,7 +3,7 @@ if Code.ensure_loaded?(Bonfire.API.GraphQL) do
 defmodule ValueFlows.Observe.ObservablePropertiesGraphQL do
   alias Bonfire.API.GraphQL
 
-  import Where
+  import Untangle
 
   # resolvers
 

@@ -17,7 +17,7 @@ defmodule ValueFlows.Observe.Observations do
 
   import Bonfire.Fail
 
-  import Where
+  import Untangle
 
   def cursor(), do: &[&1.id]
   def test_cursor(), do: &[&1["id"]]
