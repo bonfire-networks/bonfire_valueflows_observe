@@ -1,11 +1,18 @@
 # SPDX-License-Identifier: AGPL-3.0-only
 defmodule ValueFlows.Observe.Observations do
-  use Bonfire.Common.Utils, only: [maybe_put: 3, attr_get_id: 2, maybe: 2, maybe_append: 2, map_key_replace: 3]
+  use Bonfire.Common.Utils,
+    only: [
+      maybe_put: 3,
+      attr_get_id: 2,
+      maybe: 2,
+      maybe_append: 2,
+      map_key_replace: 3
+    ]
 
   import Bonfire.Common.Config, only: [repo: 0]
-
   # alias Bonfire.API.GraphQL
-  alias Bonfire.API.GraphQL.{Fields, Page}
+  alias Bonfire.API.GraphQL.Fields
+  alias Bonfire.API.GraphQL.Page
 
   @user Application.compile_env!(:bonfire, :user_schema)
 
@@ -36,7 +43,8 @@ defmodule ValueFlows.Observe.Observations do
   Used by:
   * Various parts of the codebase that need to query for this (inc. tests)
   """
-  def many(filters \\ []), do: {:ok, repo().many(Queries.query(Observation, filters))}
+  def many(filters \\ []),
+    do: {:ok, repo().many(Queries.query(Observation, filters))}
 
   def fields(group_fn, filters \\ [])
       when is_function(group_fn, 1) do
@@ -50,14 +58,27 @@ defmodule ValueFlows.Observe.Observations do
   Used by:
   * GraphQL resolver single-parent resolution
   """
-  def page(cursor_fn, page_opts, base_filters \\ [], data_filters \\ [], count_filters \\ [])
+  def page(
+        cursor_fn,
+        page_opts,
+        base_filters \\ [],
+        data_filters \\ [],
+        count_filters \\ []
+      )
 
-  def page(cursor_fn, %{} = page_opts, base_filters, data_filters, count_filters) do
+  def page(
+        cursor_fn,
+        %{} = page_opts,
+        base_filters,
+        data_filters,
+        count_filters
+      ) do
     base_q = Queries.query(Observation, base_filters)
     data_q = Queries.filter(base_q, data_filters)
     count_q = Queries.filter(base_q, count_filters)
 
-    with {:ok, [data, counts]} <- repo().transact_many(all: data_q, count: count_q) do
+    with {:ok, [data, counts]} <-
+           repo().transact_many(all: data_q, count: count_q) do
       {:ok, Page.new(data, counts, cursor_fn, page_opts)}
     end
   end
@@ -77,7 +98,14 @@ defmodule ValueFlows.Observe.Observations do
         count_filters \\ []
       )
 
-  def pages(cursor_fn, group_fn, page_opts, base_filters, data_filters, count_filters) do
+  def pages(
+        cursor_fn,
+        group_fn,
+        page_opts,
+        base_filters,
+        data_filters,
+        count_filters
+      ) do
     Bonfire.API.GraphQL.Pagination.pages(
       Queries,
       Observation,
@@ -95,9 +123,7 @@ defmodule ValueFlows.Observe.Observations do
     observation
   end
 
-
   ## mutations
-
 
   @doc """
   Create an observation
@@ -111,26 +137,32 @@ defmodule ValueFlows.Observe.Observations do
 
     cs = Observation.create_changeset(creator, new_observation_attrs)
 
-    #IO.inspect(creator: creator)
-    #IO.inspect(new_observation_attrs: new_observation_attrs)
+    # IO.inspect(creator: creator)
+    # IO.inspect(new_observation_attrs: new_observation_attrs)
 
     repo().transact_with(fn ->
       with :ok <- validate_user_involvement(creator, new_observation_attrs),
-           :ok <- validate_provider_is_primary_accountable(new_observation_attrs),
-           {:ok, observation} <- repo().insert(cs |> Observation.create_changeset_validate()),
+           :ok <-
+             validate_provider_is_primary_accountable(new_observation_attrs),
+           {:ok, observation} <-
+             repo().insert(Observation.create_changeset_validate(cs)),
            observation = preload_all(observation),
            act_attrs = %{verb: "created", is_local: true},
-           {:ok, activity} <- ValueFlows.Util.publish(creator, :observe, observation) do
-        indexing_object_format(observation) |> ValueFlows.Util.index_for_search()
+           {:ok, activity} <-
+             ValueFlows.Util.publish(creator, :observe, observation) do
+        indexing_object_format(observation)
+        |> ValueFlows.Util.index_for_search()
+
         {:ok, observation}
       end
     end)
   end
 
   def create(%{} = creator, %{id: context_id}, observation_attrs) do
-
-    create(creator, observation_attrs
-      |> Map.put_new(:context_id, context_id))
+    create(
+      creator,
+      Map.put_new(observation_attrs, :context_id, context_id)
+    )
   end
 
   # TODO: take the user who is performing the update
@@ -141,13 +173,13 @@ defmodule ValueFlows.Observe.Observations do
       attrs = prepare_attrs(attrs, observation.creator)
 
       with :ok <- validate_user_involvement(user, observation),
-           {:ok, observation} <- repo().update(Observation.update_changeset(observation, attrs)),
+           {:ok, observation} <-
+             repo().update(Observation.update_changeset(observation, attrs)),
            {:ok, _} <- ValueFlows.Util.publish(observation, :updated) do
         {:ok, observation}
       end
     end)
   end
-
 
   defp validate_user_involvement(
          %{id: creator_id},
@@ -158,7 +190,6 @@ defmodule ValueFlows.Observe.Observations do
     :ok
   end
 
-
   defp validate_user_involvement(
          creator,
          %{provider: provider} = _observation
@@ -168,7 +199,7 @@ defmodule ValueFlows.Observe.Observations do
   end
 
   defp validate_user_involvement(_creator, _observation) do
-   {:error, fail(403, "You cannot do this if you are not provider.")}
+    {:error, fail(403, "You cannot do this if you are not provider.")}
   end
 
   defp validate_provider_is_primary_accountable(
@@ -187,17 +218,21 @@ defmodule ValueFlows.Observe.Observations do
          %{resource_inventoried_as: resource, provider_id: provider_id} = _observation
        )
        when is_struct(resource) and not is_nil(provider_id) do
-    if is_nil(resource.primary_accountable_id) or provider_id == resource.primary_accountable_id do
+    if is_nil(resource.primary_accountable_id) or
+         provider_id == resource.primary_accountable_id do
       :ok
     else
-      {:error, fail(403, "You cannot do this since the provider is not accountable for the resource.")}
+      {:error,
+       fail(
+         403,
+         "You cannot do this since the provider is not accountable for the resource."
+       )}
     end
   end
 
   defp validate_provider_is_primary_accountable(_observation) do
     :ok
   end
-
 
   defp prepare_attrs(attrs, creator \\ nil) do
     attrs
@@ -208,9 +243,15 @@ defmodule ValueFlows.Observe.Observations do
     |> Map.put_new(:result_time, DateTime.utc_now())
     |> maybe_put(:provider_id, Util.attr_get_agent(attrs, :provider, creator))
     |> maybe_put(:made_by_sensor_id, attr_get_id(attrs, :made_by_sensor_id))
-    |> maybe_put(:has_feature_of_interest_id, attr_get_id(attrs, :has_feature_of_interest))
+    |> maybe_put(
+      :has_feature_of_interest_id,
+      attr_get_id(attrs, :has_feature_of_interest)
+    )
     |> maybe_put(:observed_property_id, attr_get_id(attrs, :observed_property))
-    |> maybe_put(:has_result_id, attr_get_id(attrs, :has_result) || attr_get_id(attrs, :result_phenomenon) )
+    |> maybe_put(
+      :has_result_id,
+      attr_get_id(attrs, :has_result) || attr_get_id(attrs, :result_phenomenon)
+    )
     |> maybe_put(:observed_during_id, attr_get_id(attrs, :observed_during))
     |> maybe_put(:at_location_id, attr_get_id(attrs, :at_location))
     |> parse_measure_attrs()
@@ -230,7 +271,8 @@ defmodule ValueFlows.Observe.Observations do
 
   def soft_delete(%Observation{} = observation) do
     repo().transact_with(fn ->
-      with {:ok, observation} <- Bonfire.Common.Repo.Delete.soft_delete(observation),
+      with {:ok, observation} <-
+             Bonfire.Common.Repo.Delete.soft_delete(observation),
            {:ok, _} <- ValueFlows.Util.publish(observation, :deleted) do
         {:ok, observation}
       end
@@ -246,9 +288,8 @@ defmodule ValueFlows.Observe.Observations do
       "summary" => Map.get(obj, :note),
       "published_at" => obj.published_at,
       "creator" => ValueFlows.Util.indexing_format_creator(obj)
+
       # "index_instance" => URI.parse(obj.character.canonical_url).host, # home instance of object
     }
   end
-
-
 end

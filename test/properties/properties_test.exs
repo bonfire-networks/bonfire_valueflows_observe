@@ -22,26 +22,32 @@ defmodule ValueFlows.Observe.PropertiesTest do
       observable_property = fake_observable_property!(user)
 
       assert {:ok, fetched} = ObservableProperties.one(id: observable_property.id)
-      assert_observable_property(observable_property, fetched)
 
+      assert_observable_property(observable_property, fetched)
     end
   end
 
   describe "create" do
     test "creates a new observable_property" do
       user = fake_user!()
+
       assert {:ok, observable_property} = ObservableProperties.create(user, observable_property())
+
       assert_observable_property(observable_property)
     end
 
     test "creates a new observable_property within the taxonomy" do
-      ValueFlows.Observe.Seeds.up(nil) # requires seeds
+      # requires seeds
+      ValueFlows.Observe.Seeds.up(nil)
 
       user = fake_user!()
+
       assert {:ok, observable_property} = ObservableProperties.create(user, observable_property())
+
       assert_observable_property(observable_property)
-      #IO.inspect(observable_property)
-      assert observable_property.parent_category_id == ValueFlows.Observe.ObservableProperties.id()
+      # IO.inspect(observable_property)
+      assert observable_property.parent_category_id ==
+               ValueFlows.Observe.ObservableProperties.id()
     end
 
     test "creates two ObservableProperties with the same attributes" do
@@ -54,11 +60,11 @@ defmodule ValueFlows.Observe.PropertiesTest do
 
       assert {:ok, measure2} = ObservableProperties.create(user, attrs)
       assert_observable_property(measure2)
-
     end
 
     test "fails when missing attributes" do
       user = fake_user!()
+
       assert {:error, %Ecto.Changeset{}} = ObservableProperties.create(user, %{})
     end
   end
@@ -69,7 +75,9 @@ defmodule ValueFlows.Observe.PropertiesTest do
       observable_property = fake_observable_property!(user)
 
       attrs = observable_property()
+
       assert {:ok, updated} = ObservableProperties.update(user, observable_property, attrs)
+
       assert_observable_property(updated)
       assert observable_property != updated
     end

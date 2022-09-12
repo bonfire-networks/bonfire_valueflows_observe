@@ -6,13 +6,13 @@ defmodule ValueFlows.Observe.ObservationsTest do
 
   # import CommonsPub.Utils.Trendy
   import Bonfire.Common.Simulation
+
   # import CommonsPub.Utils.Simulate
   # import CommonsPub.Web.Test.Orderings
   # import CommonsPub.Web.Test.Automaton
 
   # import Grumble
   # import Zest
-
   # alias CommonsPub.Utils.Simulation
 
   import ValueFlows.Observe.Simulate
@@ -41,8 +41,9 @@ defmodule ValueFlows.Observe.ObservationsTest do
     end
 
     test "returns NotFound if item is deleted" do
-      observation = fake_user!() |> fake_observation!()
+      observation = fake_observation!(fake_user!())
       assert {:ok, observation} = Observations.soft_delete(observation)
+
       assert {:error, :not_found} = Observations.one([:default, id: observation.id])
     end
   end
@@ -50,14 +51,28 @@ defmodule ValueFlows.Observe.ObservationsTest do
   describe "create" do
     test "new observation with a measure" do
       user = fake_user!()
-      assert {:ok, observation = %Observation{}} = Observations.create(user, observation_with_req_fields(user))
+
+      assert {:ok, observation = %Observation{}} =
+               Observations.create(user, observation_with_req_fields(user))
+
       assert observation.creator_id == user.id
     end
 
     test "new observation with an observable phenomena" do
       user = fake_user!()
       phenon = fake_observable_phenomenon!(user)
-      assert {:ok, observation = %Observation{}} = Observations.create(user, observation(%{}, ValueFlows.Simulate.fake_economic_resource!(user), fake_observable_property!(user), phenon))
+
+      assert {:ok, observation = %Observation{}} =
+               Observations.create(
+                 user,
+                 observation(
+                   %{},
+                   ValueFlows.Simulate.fake_economic_resource!(user),
+                   fake_observable_property!(user),
+                   phenon
+                 )
+               )
+
       assert observation.creator_id == user.id
       assert observation.has_result_id == phenon.id
     end
@@ -68,7 +83,13 @@ defmodule ValueFlows.Observe.ObservationsTest do
       user = fake_user!()
       context = fake_user!()
 
-      assert {:ok, observation = %Observation{}} = Observations.create(user, context, observation_with_req_fields(user))
+      assert {:ok, observation = %Observation{}} =
+               Observations.create(
+                 user,
+                 context,
+                 observation_with_req_fields(user)
+               )
+
       assert observation.creator_id == user.id
       assert observation.context_id == context.id
     end
@@ -83,14 +104,16 @@ defmodule ValueFlows.Observe.ObservationsTest do
       user = fake_user!()
       context = fake_user!()
       observation = fake_observation!(user, context, %{note: "Bottle Caps"})
+
       assert {:ok, updated} = Observations.update(user, observation, %{note: "Rad"})
+
       assert observation != updated
     end
   end
 
   describe "soft_delete" do
     test "deletes an existing observation" do
-      observation = fake_user!() |> fake_observation!()
+      observation = fake_observation!(fake_user!())
       refute observation.deleted_at
       assert {:ok, deleted} = Observations.soft_delete(observation)
       assert deleted.deleted_at

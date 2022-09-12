@@ -26,20 +26,50 @@ defmodule ValueFlows.Observe.Observation do
 
     # agent or `EconomicResource` or `ResourceSpecification`
     belongs_to(:made_by_sensor, Pointers.Pointer)
-    belongs_to(:made_by_agent, @user, foreign_key: :made_by_sensor_id, define_field: false)
-    belongs_to(:made_by_resource, EconomicResource, foreign_key: :made_by_sensor_id, define_field: false)
-    belongs_to(:made_by_resource_specification, ResourceSpecification, foreign_key: :made_by_sensor_id, define_field: false)
+
+    belongs_to(:made_by_agent, @user,
+      foreign_key: :made_by_sensor_id,
+      define_field: false
+    )
+
+    belongs_to(:made_by_resource, EconomicResource,
+      foreign_key: :made_by_sensor_id,
+      define_field: false
+    )
+
+    belongs_to(:made_by_resource_specification, ResourceSpecification,
+      foreign_key: :made_by_sensor_id,
+      define_field: false
+    )
 
     # EconomicResource or Agent
     belongs_to(:has_feature_of_interest, Pointers.Pointer)
-    belongs_to(:has_observed_resource, EconomicResource, foreign_key: :has_feature_of_interest_id, define_field: false)
-    belongs_to(:has_observed_agent, @user, foreign_key: :has_feature_of_interest_id, define_field: false)
+
+    belongs_to(:has_observed_resource, EconomicResource,
+      foreign_key: :has_feature_of_interest_id,
+      define_field: false
+    )
+
+    belongs_to(:has_observed_agent, @user,
+      foreign_key: :has_feature_of_interest_id,
+      define_field: false
+    )
 
     belongs_to(:observed_property, Bonfire.Classify.Category)
 
     belongs_to(:has_result, Pointers.Pointer)
-    belongs_to(:result_measure, Bonfire.Quantify.Measure, on_replace: :nilify, foreign_key: :has_result_id, define_field: false)
-    belongs_to(:result_phenomenon, Bonfire.Classify.Category, on_replace: :nilify, foreign_key: :has_result_id, define_field: false)
+
+    belongs_to(:result_measure, Bonfire.Quantify.Measure,
+      on_replace: :nilify,
+      foreign_key: :has_result_id,
+      define_field: false
+    )
+
+    belongs_to(:result_phenomenon, Bonfire.Classify.Category,
+      on_replace: :nilify,
+      foreign_key: :has_result_id,
+      define_field: false
+    )
 
     belongs_to(:observed_during, Process)
 
@@ -80,8 +110,7 @@ defmodule ValueFlows.Observe.Observation do
   end
 
   def create_changeset_validate(cs) do
-    cs
-    |> Changeset.validate_required(@required)
+    Changeset.validate_required(cs, @required)
   end
 
   def update_changeset(%Observation{} = event, attrs) do

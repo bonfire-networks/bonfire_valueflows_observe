@@ -1,5 +1,4 @@
 defmodule ValueFlows.Observe.ObservableProperties do
-
   alias ValueFlows.Observe.Classifications
 
   def facet, do: "ObservableProperty"
@@ -8,7 +7,11 @@ defmodule ValueFlows.Observe.ObservableProperties do
   defdelegate one(filters), to: Classifications
 
   def create(user, attrs) do
-    Classifications.create(user, Map.put_new(attrs, :parent_category, id()), facet())
+    Classifications.create(
+      user,
+      Map.put_new(attrs, :parent_category, id()),
+      facet()
+    )
   end
 
   def update(user, obj, attrs) do

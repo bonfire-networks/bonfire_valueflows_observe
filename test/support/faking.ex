@@ -7,6 +7,7 @@ defmodule ValueFlows.Observe.Test.Faking do
   # import ExUnit.Assertions
   import Bonfire.API.GraphQL.Test.GraphQLAssertions
   import Bonfire.API.GraphQL.Test.GraphQLFields
+
   # import CommonsPub.Utils.Trendy
 
   import Grumble
@@ -15,7 +16,6 @@ defmodule ValueFlows.Observe.Test.Faking do
   alias ValueFlows.Observe.Observations
 
   ## Observation
-
   ### Graphql fields
 
   def observation_subquery(options \\ []) do
@@ -30,7 +30,6 @@ defmodule ValueFlows.Observe.Test.Faking do
   def observation_fields(extra \\ []) do
     extra ++ ~w(id note)a
   end
-
 
   def observations_query(options \\ []) do
     params =
@@ -58,28 +57,41 @@ defmodule ValueFlows.Observe.Test.Faking do
   end
 
   def create_observation_mutation(options \\ []) do
-    [observation: type!(:observation_create_params)]
-    |> gen_mutation(&create_observation_submutation/1, options)
+    gen_mutation(
+      [observation: type!(:observation_create_params)],
+      &create_observation_submutation/1,
+      options
+    )
   end
 
   def create_observation_submutation(options \\ []) do
-    [observation: var(:observation)]
-    |> gen_submutation(:create_observation, &observation_fields/1, options)
+    gen_submutation(
+      [observation: var(:observation)],
+      :create_observation,
+      &observation_fields/1,
+      options
+    )
   end
 
   def update_observation_mutation(options \\ []) do
-    [observation: type!(:observation_update_params)]
-    |> gen_mutation(&update_observation_submutation/1, options)
+    gen_mutation(
+      [observation: type!(:observation_update_params)],
+      &update_observation_submutation/1,
+      options
+    )
   end
 
   def update_observation_submutation(options \\ []) do
-    [observation: var(:observation)]
-    |> gen_submutation(:update_observation, &observation_fields/1, options)
+    gen_submutation(
+      [observation: var(:observation)],
+      :update_observation,
+      &observation_fields/1,
+      options
+    )
   end
 
   def delete_observation_mutation(options \\ []) do
-    [id: type!(:id)]
-    |> gen_mutation(&delete_observation_submutation/1, options)
+    gen_mutation([id: type!(:id)], &delete_observation_submutation/1, options)
   end
 
   def delete_observation_submutation(_options \\ []) do
@@ -89,9 +101,9 @@ defmodule ValueFlows.Observe.Test.Faking do
   ### Observation assertion
 
   def assert_observation(observation) do
-    assert_object(observation, :assert_observation,
-      [id: &assert_ulid/1],
-      [note: &assert_binary/1]
+    assert_object(observation, :assert_observation, [id: &assert_ulid/1],
+      note: &assert_binary/1
+
       # has_result_id: &assert_ulid/1
     )
   end
@@ -109,7 +121,6 @@ defmodule ValueFlows.Observe.Test.Faking do
     obs2
   end
 
-
   ## ObservableProperties
 
   def observable_property_fields(extra \\ []) do
@@ -126,7 +137,12 @@ defmodule ValueFlows.Observe.Test.Faking do
   end
 
   def observable_property_subquery(options \\ []) do
-    gen_subquery(:id, :observable_property, &observable_property_fields/1, options)
+    gen_subquery(
+      :id,
+      :observable_property,
+      &observable_property_fields/1,
+      options
+    )
   end
 
   def observable_property_query(options \\ []) do
@@ -142,7 +158,9 @@ defmodule ValueFlows.Observe.Test.Faking do
         limit: :int
       ] ++ Keyword.get(options, :params, [])
 
-    gen_query(&observable_properties_pages_subquery/1, [{:params, params} | options])
+    gen_query(&observable_properties_pages_subquery/1, [
+      {:params, params} | options
+    ])
   end
 
   def observable_properties_pages_subquery(options \\ []) do
@@ -159,36 +177,47 @@ defmodule ValueFlows.Observe.Test.Faking do
     )
   end
 
-
   def create_observable_property_mutation(options \\ []) do
-    [observable_property: type!(:observable_property_create_params)]
-    |> gen_mutation(&create_observable_property_submutation/1, options)
+    gen_mutation(
+      [observable_property: type!(:observable_property_create_params)],
+      &create_observable_property_submutation/1,
+      options
+    )
   end
 
   def create_observable_property_submutation(options \\ []) do
-    [observable_property: var(:observable_property)]
-    |> gen_submutation(:create_observable_property, &observable_property_response_fields/1, options)
+    gen_submutation(
+      [observable_property: var(:observable_property)],
+      :create_observable_property,
+      &observable_property_response_fields/1,
+      options
+    )
   end
 
   def update_observable_property_mutation(options \\ []) do
-    [observable_property: type!(:observable_property_update_params)]
-    |> gen_mutation(&update_observable_property_submutation/1, options)
+    gen_mutation(
+      [observable_property: type!(:observable_property_update_params)],
+      &update_observable_property_submutation/1,
+      options
+    )
   end
 
   def update_observable_property_submutation(options \\ []) do
-    [observable_property: var(:observable_property)]
-    |> gen_submutation(:update_observable_property, &observable_property_response_fields/1, options)
+    gen_submutation(
+      [observable_property: var(:observable_property)],
+      :update_observable_property,
+      &observable_property_response_fields/1,
+      options
+    )
   end
 
   def delete_observable_property_mutation(options \\ []) do
-    [id: type!(:id)]
-    |> gen_mutation(&delete_observable_property_submutation/1, options)
+    gen_mutation([id: type!(:id)], &delete_observable_property_submutation/1, options)
   end
 
   def delete_observable_property_submutation(_options \\ []) do
     field(:delete_observable_property, args: [id: var(:id)])
   end
-
 
   def assert_observable_property(%{__struct__: _type} = observable_property) do
     assert_observable_property(Map.from_struct(observable_property))
@@ -198,18 +227,31 @@ defmodule ValueFlows.Observe.Test.Faking do
     assert_object(observable_property, :assert_observable_property, label: &assert_binary/1)
   end
 
-  def assert_observable_property(%{} = observable_property, %{} = observable_property2) do
-    assert_observable_properties_eq(observable_property, assert_observable_property(observable_property2))
+  def assert_observable_property(
+        %{} = observable_property,
+        %{} = observable_property2
+      ) do
+    assert_observable_properties_eq(
+      observable_property,
+      assert_observable_property(observable_property2)
+    )
   end
 
-  def assert_observable_properties_eq(%{} = observable_property, %{} = observable_property2) do
-    assert_maps_eq(observable_property, observable_property2, :assert_observable_property, [
-      :label,
-      :published_at,
-      :disabled_at
-    ])
+  def assert_observable_properties_eq(
+        %{} = observable_property,
+        %{} = observable_property2
+      ) do
+    assert_maps_eq(
+      observable_property,
+      observable_property2,
+      :assert_observable_property,
+      [
+        :label,
+        :published_at,
+        :disabled_at
+      ]
+    )
   end
-
 
   ## ObservablePhenomenons
 
@@ -227,7 +269,12 @@ defmodule ValueFlows.Observe.Test.Faking do
   end
 
   def observable_phenomenon_subquery(options \\ []) do
-    gen_subquery(:id, :observable_phenomenon, &observable_phenomenon_fields/1, options)
+    gen_subquery(
+      :id,
+      :observable_phenomenon,
+      &observable_phenomenon_fields/1,
+      options
+    )
   end
 
   def observable_phenomenon_query(options \\ []) do
@@ -243,7 +290,9 @@ defmodule ValueFlows.Observe.Test.Faking do
         limit: :int
       ] ++ Keyword.get(options, :params, [])
 
-    gen_query(&observable_phenomenon_pages_subquery/1, [{:params, params} | options])
+    gen_query(&observable_phenomenon_pages_subquery/1, [
+      {:params, params} | options
+    ])
   end
 
   def observable_phenomenon_pages_subquery(options \\ []) do
@@ -260,40 +309,65 @@ defmodule ValueFlows.Observe.Test.Faking do
     )
   end
 
-
   def create_observable_phenomenon_mutation(options \\ []) do
-    [observable_phenomenon: type!(:observable_phenomenon_create_params)]
-    |> gen_mutation(&create_observable_phenomenon_submutation/1, options)
+    gen_mutation(
+      [observable_phenomenon: type!(:observable_phenomenon_create_params)],
+      &create_observable_phenomenon_submutation/1,
+      options
+    )
   end
 
   def create_observable_phenomenon_submutation(options \\ []) do
-    [observable_phenomenon: var(:observable_phenomenon)]
-    |> gen_submutation(:create_observable_phenomenon, &observable_phenomenon_response_fields/1, options)
+    gen_submutation(
+      [observable_phenomenon: var(:observable_phenomenon)],
+      :create_observable_phenomenon,
+      &observable_phenomenon_response_fields/1,
+      options
+    )
   end
 
   def create_observable_phenomenon_with_property_mutation(options \\ []) do
-    [observable_phenomenon: type!(:observable_phenomenon_create_params), choice_of: type!(:id)]
-    |> gen_mutation(&create_observable_phenomenon_with_property_submutation/1, options)
+    gen_mutation(
+      [
+        observable_phenomenon: type!(:observable_phenomenon_create_params),
+        choice_of: type!(:id)
+      ],
+      &create_observable_phenomenon_with_property_submutation/1,
+      options
+    )
   end
 
   def create_observable_phenomenon_with_property_submutation(options \\ []) do
-    [observable_phenomenon: var(:observable_phenomenon), choice_of: var(:choice_of)]
-    |> gen_submutation(:create_observable_phenomenon, &observable_phenomenon_response_fields/1, options)
+    gen_submutation(
+      [
+        observable_phenomenon: var(:observable_phenomenon),
+        choice_of: var(:choice_of)
+      ],
+      :create_observable_phenomenon,
+      &observable_phenomenon_response_fields/1,
+      options
+    )
   end
 
   def update_observable_phenomenon_mutation(options \\ []) do
-    [observable_phenomenon: type!(:observable_phenomenon_update_params)]
-    |> gen_mutation(&update_observable_phenomenon_submutation/1, options)
+    gen_mutation(
+      [observable_phenomenon: type!(:observable_phenomenon_update_params)],
+      &update_observable_phenomenon_submutation/1,
+      options
+    )
   end
 
   def update_observable_phenomenon_submutation(options \\ []) do
-    [observable_phenomenon: var(:observable_phenomenon)]
-    |> gen_submutation(:update_observable_phenomenon, &observable_phenomenon_response_fields/1, options)
+    gen_submutation(
+      [observable_phenomenon: var(:observable_phenomenon)],
+      :update_observable_phenomenon,
+      &observable_phenomenon_response_fields/1,
+      options
+    )
   end
 
   def delete_observable_phenomenon_mutation(options \\ []) do
-    [id: type!(:id)]
-    |> gen_mutation(&delete_observable_phenomenon_submutation/1, options)
+    gen_mutation([id: type!(:id)], &delete_observable_phenomenon_submutation/1, options)
   end
 
   def delete_observable_phenomenon_submutation(_options \\ []) do
@@ -308,17 +382,30 @@ defmodule ValueFlows.Observe.Test.Faking do
     assert_object(observable_phenomenon, :assert_observable_phenomenon, label: &assert_binary/1)
   end
 
-  def assert_observable_phenomenon(%{} = observable_phenomenon, %{} = observable_phenomenon2) do
-    assert_observable_phenomenons_eq(observable_phenomenon, assert_observable_phenomenon(observable_phenomenon2))
+  def assert_observable_phenomenon(
+        %{} = observable_phenomenon,
+        %{} = observable_phenomenon2
+      ) do
+    assert_observable_phenomenons_eq(
+      observable_phenomenon,
+      assert_observable_phenomenon(observable_phenomenon2)
+    )
   end
 
-  def assert_observable_phenomenons_eq(%{} = observable_phenomenon, %{} = observable_phenomenon2) do
-    assert_maps_eq(observable_phenomenon, observable_phenomenon2, :assert_observable_phenomenon, [
-      :label,
-      :formula_quantifier,
-      :published_at,
-      :disabled_at
-    ])
+  def assert_observable_phenomenons_eq(
+        %{} = observable_phenomenon,
+        %{} = observable_phenomenon2
+      ) do
+    assert_maps_eq(
+      observable_phenomenon,
+      observable_phenomenon2,
+      :assert_observable_phenomenon,
+      [
+        :label,
+        :formula_quantifier,
+        :published_at,
+        :disabled_at
+      ]
+    )
   end
-
 end

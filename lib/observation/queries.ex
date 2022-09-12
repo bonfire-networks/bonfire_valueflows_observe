@@ -48,32 +48,31 @@ defmodule ValueFlows.Observe.Observation.Queries do
   end
 
   def join_to(q, :observed_property, jq) do
-    q
     # |> join(jq, [observation: c], t in assoc(c, :observed_property), as: :observed_property)
-    |> preload([observed_property: [:profile]])
+    preload(q,
+      observed_property: [:profile]
+    )
   end
 
   def join_to(q, :has_result, jq) do
-    q
     # |> join(jq, [observation: c], t in assoc(c, :has_result), as: :has_result)
     # |> join(jq, [observation: c], m in assoc(c, :result_measure), as: :result_measure)
     # |> join(jq, [observation: c, result_measure: m], u in assoc(m, :unit), as: :unit)
-    |> preload([result_measure: [:unit]])
+    preload(q,
+      result_measure: [:unit]
+    )
   end
 
   # def join_to(q, :provider, jq) do
   #   join q, jq, [follow: f], c in assoc(f, :provider), as: :pointer
   # end
 
-
   # def join_to(q, :follower_count, jq) do
   #   join q, jq, [observation: c],
   #     f in FollowerCount, on: c.id == f.context_id,
   #     as: :follower_count
   # end
-
   ### filter/2
-
   ## by many
 
   def filter(q, filters) when is_list(filters) do
@@ -83,22 +82,33 @@ defmodule ValueFlows.Observe.Observation.Queries do
   ## by preset
 
   def filter(q, :default) do
-    filter(q, [:deleted, :has_feature_of_interest, :observed_property, :has_result])
+    filter(q, [
+      :deleted,
+      :has_feature_of_interest,
+      :observed_property,
+      :has_result
+    ])
   end
 
   def filter(q, :has_feature_of_interest) do
-    q
-    |> join_to(:has_feature_of_interest)
+    join_to(
+      q,
+      :has_feature_of_interest
+    )
   end
 
   def filter(q, :observed_property) do
-    q
-    |> join_to(:observed_property)
+    join_to(
+      q,
+      :observed_property
+    )
   end
 
   def filter(q, :has_result) do
-    q
-    |> join_to(:has_result)
+    join_to(
+      q,
+      :has_result
+    )
   end
 
   ## by join
@@ -114,12 +124,15 @@ defmodule ValueFlows.Observe.Observation.Queries do
     filter(q, ~w(disabled private)a)
   end
 
-
   def filter(q, {:user, %{id: user_id}}) do
     q
-    |> where([observation: c], not is_nil(c.published_at) or c.creator_id == ^user_id)
+    |> where(
+      [observation: c],
+      not is_nil(c.published_at) or c.creator_id == ^user_id
+    )
     |> filter(~w(disabled)a)
   end
+
   ## by status
 
   def filter(q, :deleted) do
@@ -171,11 +184,20 @@ defmodule ValueFlows.Observe.Observation.Queries do
   end
 
   def filter(q, {:agent, id}) when is_binary(id) do
-    where(q, [observation: c], c.provider_id == ^id or c.creator_id == ^id or c.made_by_sensor_id == ^id)
+    where(
+      q,
+      [observation: c],
+      c.provider_id == ^id or c.creator_id == ^id or c.made_by_sensor_id == ^id
+    )
   end
 
   def filter(q, {:agent, ids}) when is_list(ids) do
-    where(q, [observation: c], c.provider_id in ^ids or c.creator_id in ^ids or c.made_by_sensor_id in ^ids)
+    where(
+      q,
+      [observation: c],
+      c.provider_id in ^ids or c.creator_id in ^ids or
+        c.made_by_sensor_id in ^ids
+    )
   end
 
   def filter(q, {:provider, id}) when is_binary(id) do
@@ -185,7 +207,6 @@ defmodule ValueFlows.Observe.Observation.Queries do
   def filter(q, {:provider, ids}) when is_list(ids) do
     where(q, [observation: c], c.provider_id in ^ids)
   end
-
 
   def filter(q, {:at_location, at_location_id}) do
     q
@@ -198,7 +219,10 @@ defmodule ValueFlows.Observe.Observation.Queries do
     q
     |> join_to(:geolocation)
     |> preload(:at_location)
-    |> where([observation: c, geolocation: g], st_dwithin_in_meters(g.geom, ^geom_point, ^meters))
+    |> where(
+      [observation: c, geolocation: g],
+      st_dwithin_in_meters(g.geom, ^geom_point, ^meters)
+    )
   end
 
   def filter(q, {:location_within, geom_point}) do
@@ -266,9 +290,7 @@ defmodule ValueFlows.Observe.Observation.Queries do
   end
 
   def filter(q, {:order, [desc: :id]}) do
-    order_by(q, [observation: c],
-      desc: c.id
-    )
+    order_by(q, [observation: c], desc: c.id)
   end
 
   # grouping and counting

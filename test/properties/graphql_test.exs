@@ -9,16 +9,19 @@ defmodule ValueFlows.Observe.Properties.GraphQLTest do
 
   alias ValueFlows.Observe.Observations
 
-
   describe "observable_property" do
-
     test "fetches an existing observable_property by ID" do
       user = fake_user!()
       observable_property = fake_observable_property!(user)
 
       q = observable_property_query()
       conn = user_conn(user)
-      assert_observable_property(grumble_post_key(q, conn, :observable_property, %{id: observable_property.id}))
+
+      assert_observable_property(
+        grumble_post_key(q, conn, :observable_property, %{
+          id: observable_property.id
+        })
+      )
     end
 
     test "creates an observable property" do
@@ -27,7 +30,17 @@ defmodule ValueFlows.Observe.Properties.GraphQLTest do
       q = create_observable_property_mutation()
       conn = user_conn(user)
       vars = %{observable_property: observable_property_input()}
-      r = grumble_post_key(q, conn, :create_observable_property, vars, "test", false) #|> IO.inspect()
+      # |> IO.inspect()
+      r =
+        grumble_post_key(
+          q,
+          conn,
+          :create_observable_property,
+          vars,
+          "test",
+          false
+        )
+
       assert_observable_property(r)
     end
 
@@ -37,8 +50,22 @@ defmodule ValueFlows.Observe.Properties.GraphQLTest do
 
       q = update_observable_property_mutation()
       conn = user_conn(user)
-      vars = %{observable_property: Map.put(observable_property_input(), "id", observable_property.id)}
-      r = grumble_post_key(q, conn, :update_observable_property, vars, "test", false) #|> IO.inspect()
+
+      vars = %{
+        observable_property: Map.put(observable_property_input(), "id", observable_property.id)
+      }
+
+      # |> IO.inspect()
+      r =
+        grumble_post_key(
+          q,
+          conn,
+          :update_observable_property,
+          vars,
+          "test",
+          false
+        )
+
       assert_observable_property(r)
     end
 
@@ -48,7 +75,10 @@ defmodule ValueFlows.Observe.Properties.GraphQLTest do
 
       q = delete_observable_property_mutation()
       conn = user_conn(user)
-      assert grumble_post_key(q, conn, :delete_observable_property, %{id: observable_property.id})
+
+      assert grumble_post_key(q, conn, :delete_observable_property, %{
+               id: observable_property.id
+             })
     end
 
     test "fetches a page of observable_properties" do
@@ -60,12 +90,11 @@ defmodule ValueFlows.Observe.Properties.GraphQLTest do
       conn = user_conn(user)
       # vars = %{after: after_observable_property.id, limit: 2}
       vars = %{limit: 2}
+
       assert %{"edges" => fetched} = grumble_post_key(q, conn, :observable_properties_pages, vars)
+
       assert Enum.count(fetched) == 2
       # assert List.first(fetched)["id"] == after_observable_property.id
     end
-
   end
-
-
 end

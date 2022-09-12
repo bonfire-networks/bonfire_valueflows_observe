@@ -14,6 +14,7 @@ defmodule ValueFlows.Observe.ObservationsGraphQLTest do
 
       q = observation_query()
       conn = user_conn(user)
+
       assert_observation(grumble_post_key(q, conn, :observation, %{id: observation.id}))
     end
 
@@ -24,6 +25,7 @@ defmodule ValueFlows.Observe.ObservationsGraphQLTest do
 
       q = observation_query()
       conn = user_conn(user)
+
       assert [%{"status" => 404}] = grumble_post_errors(q, conn, %{id: observation.id})
     end
 
@@ -45,7 +47,9 @@ defmodule ValueFlows.Observe.ObservationsGraphQLTest do
       q = observations_query()
       conn = user_conn(user)
       vars = %{after: after_observation.id, limit: 2}
+
       assert %{"edges" => fetched} = grumble_post_key(q, conn, :observations_pages, vars)
+
       assert Enum.count(fetched) == 2
       assert List.first(fetched)["id"] == after_observation.id
     end
@@ -58,7 +62,8 @@ defmodule ValueFlows.Observe.ObservationsGraphQLTest do
       q = create_observation_mutation()
       conn = user_conn(user)
       vars = %{observation: observation_input(user)}
-      r = grumble_post_key(q, conn, :create_observation, vars) #|> IO.inspect()
+      # |> IO.inspect()
+      r = grumble_post_key(q, conn, :create_observation, vars)
       assert_observation(r)
     end
 
@@ -68,8 +73,13 @@ defmodule ValueFlows.Observe.ObservationsGraphQLTest do
 
       q = create_observation_mutation(fields: [in_scope_of: [:__typename]])
       conn = user_conn(user)
-      vars = %{observation: Map.put(observation_input(user), :in_scope_of, context.id)}
-      r = grumble_post_key(q, conn, :create_observation, vars) #|> IO.inspect()
+
+      vars = %{
+        observation: Map.put(observation_input(user), :in_scope_of, context.id)
+      }
+
+      # |> IO.inspect()
+      r = grumble_post_key(q, conn, :create_observation, vars)
       assert_observation(r)
     end
   end
@@ -81,8 +91,13 @@ defmodule ValueFlows.Observe.ObservationsGraphQLTest do
 
       q = update_observation_mutation()
       conn = user_conn(user)
-      vars = %{observation: Map.put(observation_input(user), "id", observation.id)}
-      r = grumble_post_key(q, conn, :update_observation, vars) #|> IO.inspect()
+
+      vars = %{
+        observation: Map.put(observation_input(user), "id", observation.id)
+      }
+
+      # |> IO.inspect()
+      r = grumble_post_key(q, conn, :update_observation, vars)
       assert_observation(r)
     end
   end
@@ -94,10 +109,10 @@ defmodule ValueFlows.Observe.ObservationsGraphQLTest do
 
       q = delete_observation_mutation()
       conn = user_conn(user)
-      assert grumble_post_key(q, conn, :delete_observation, %{id: observation.id})
+
+      assert grumble_post_key(q, conn, :delete_observation, %{
+               id: observation.id
+             })
     end
-
   end
-
-
 end

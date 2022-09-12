@@ -42,7 +42,6 @@ defmodule ValueFlows.Observe.Migrations do
 
       timestamps(inserted_at: false, type: :utc_datetime_usec)
     end
-
   end
 
   def down do

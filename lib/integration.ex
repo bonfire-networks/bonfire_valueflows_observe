@@ -3,7 +3,8 @@ defmodule ValueFlows.Observe.Integration do
     if Map.get(user, :instance_admin) do
       Map.get(user.instance_admin, :is_instance_admin)
     else
-      false # FIXME
+      # FIXME
+      false
     end
   end
 end
