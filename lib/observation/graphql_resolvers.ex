@@ -175,7 +175,7 @@ if Code.ensure_loaded?(Bonfire.API.GraphQL) do
     def update_observation(%{observation: %{id: id} = changes}, info) do
       with {:ok, user} <- GraphQL.current_user_or_not_logged_in(info),
            {:ok, observation} <- observation(%{id: id}, info),
-           :ok <- ValueFlows.Util.ensure_edit_permission(user, observation),
+           :ok <- ValueFlows.Util.can?(user, observation),
            #  {:ok, uploads} <- ValueFlows.Util.GraphQL.maybe_upload(user, changes, info),
            #  changes = Map.merge(changes, uploads),
            {:ok, observation} <- Observations.update(user, observation, changes) do
@@ -187,7 +187,7 @@ if Code.ensure_loaded?(Bonfire.API.GraphQL) do
       repo().transact_with(fn ->
         with {:ok, user} <- GraphQL.current_user_or_not_logged_in(info),
              {:ok, observation} <- observation(%{id: id}, info),
-             :ok <- ValueFlows.Util.ensure_edit_permission(user, observation),
+             :ok <- ValueFlows.Util.can?(user, :delete, observation),
              {:ok, _} <- Observations.soft_delete(observation) do
           {:ok, true}
         end
