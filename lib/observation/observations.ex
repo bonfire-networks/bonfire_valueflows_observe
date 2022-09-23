@@ -128,9 +128,9 @@ defmodule ValueFlows.Observe.Observations do
   @doc """
   Create an observation
   """
-  def create(%{} = creator, observation_attrs) do
+  def create(%{} = creator, attrs) do
     new_observation_attrs =
-      observation_attrs
+      attrs
       # fallback if none indicated
       |> Map.put_new(:provider, creator)
       |> prepare_attrs(creator)
@@ -149,7 +149,7 @@ defmodule ValueFlows.Observe.Observations do
            observation = preload_all(observation),
            act_attrs = %{verb: "created", is_local: true},
            {:ok, activity} <-
-             ValueFlows.Util.publish(creator, :observe, observation) do
+             ValueFlows.Util.publish(creator, :observe, observation, attrs: attrs) do
         indexing_object_format(observation)
         |> ValueFlows.Util.index_for_search()
 
