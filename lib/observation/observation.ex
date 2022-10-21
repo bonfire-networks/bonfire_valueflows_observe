@@ -134,9 +134,9 @@ defmodule ValueFlows.Observe.Observation do
     )
   end
 
+  @behaviour Bonfire.Common.SchemaModule
   def context_module, do: ValueFlows.Observe.Observations
-
-  def queries_module, do: ValueFlows.Observe.Observation.Queries
+  def query_module, do: ValueFlows.Observe.Observation.Queries
 
   def follow_filters, do: [:default]
 end
