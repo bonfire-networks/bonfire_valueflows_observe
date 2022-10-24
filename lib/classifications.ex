@@ -3,7 +3,6 @@ defmodule ValueFlows.Observe.Classifications do
   import Bonfire.Common.Config, only: [repo: 0]
   use Bonfire.Common.Utils, only: [maybe_put: 3]
   alias Bonfire.Common.Utils
-  alias Bonfire.Common.Repo
 
   def one(filters) do
     Categories.one(filters) |> from_classification()
@@ -58,7 +57,7 @@ defmodule ValueFlows.Observe.Classifications do
 
   def flatten(obj) do
     # IO.inspect(obj)
-    obj = Repo.maybe_preload(obj, :profile)
+    obj = repo().maybe_preload(obj, :profile)
 
     obj
     |> Map.merge(Map.get(obj, :extra_info) || %{})
