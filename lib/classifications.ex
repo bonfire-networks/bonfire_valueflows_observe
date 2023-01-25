@@ -69,7 +69,7 @@ defmodule ValueFlows.Observe.Classifications do
   def to_ecto_struct(module, map) do
     struct(module)
     |> Ecto.Changeset.cast(
-      Utils.stringify_keys(map, false),
+      Enums.stringify_keys(map, false),
       module.__schema__(:fields)
     )
     |> Ecto.Changeset.apply_changes()
