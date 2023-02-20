@@ -1,4 +1,5 @@
-defmodule ValueFlows.Observe.Repo.Migrations.InitPointers do
+defmodule ValueFlows.Observe.Repo.Migrations.InitPointers  do
+  @moduledoc false
   use Ecto.Migration
   import Pointers.Migration
   import Pointers.ULID.Migration
