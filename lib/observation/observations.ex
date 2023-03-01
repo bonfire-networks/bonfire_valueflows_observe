@@ -2,11 +2,7 @@
 defmodule ValueFlows.Observe.Observations do
   use Bonfire.Common.Utils,
     only: [
-      maybe_put: 3,
-      attr_get_id: 2,
-      maybe: 2,
-      maybe_append: 2,
-      map_key_replace: 3
+      maybe: 2
     ]
 
   import Bonfire.Common.Config, only: [repo: 0]
@@ -236,31 +232,31 @@ defmodule ValueFlows.Observe.Observations do
 
   defp prepare_attrs(attrs, creator \\ nil) do
     attrs
-    |> maybe_put(
+    |> Enums.maybe_put(
       :context_id,
       attrs |> Map.get(:in_scope_of, []) |> maybe(&List.first/1)
     )
     |> Map.put_new(:result_time, DateTime.utc_now())
-    |> maybe_put(:provider_id, Util.attr_get_agent(attrs, :provider, creator))
-    |> maybe_put(:made_by_sensor_id, attr_get_id(attrs, :made_by_sensor_id))
-    |> maybe_put(
+    |> Enums.maybe_put(:provider_id, Util.attr_get_agent(attrs, :provider, creator))
+    |> Enums.maybe_put(:made_by_sensor_id, Enums.attr_get_id(attrs, :made_by_sensor_id))
+    |> Enums.maybe_put(
       :has_feature_of_interest_id,
-      attr_get_id(attrs, :has_feature_of_interest)
+      Enums.attr_get_id(attrs, :has_feature_of_interest)
     )
-    |> maybe_put(:observed_property_id, attr_get_id(attrs, :observed_property))
-    |> maybe_put(
+    |> Enums.maybe_put(:observed_property_id, Enums.attr_get_id(attrs, :observed_property))
+    |> Enums.maybe_put(
       :has_result_id,
-      attr_get_id(attrs, :has_result) || attr_get_id(attrs, :result_phenomenon)
+      Enums.attr_get_id(attrs, :has_result) || Enums.attr_get_id(attrs, :result_phenomenon)
     )
-    |> maybe_put(:observed_during_id, attr_get_id(attrs, :observed_during))
-    |> maybe_put(:at_location_id, attr_get_id(attrs, :at_location))
+    |> Enums.maybe_put(:observed_during_id, Enums.attr_get_id(attrs, :observed_during))
+    |> Enums.maybe_put(:at_location_id, Enums.attr_get_id(attrs, :at_location))
     |> parse_measure_attrs()
   end
 
   defp parse_measure_attrs(attrs) do
     Enum.reduce(attrs, %{}, fn {k, v}, acc ->
       if is_map(v) and Map.has_key?(v, :has_unit) do
-        v = map_key_replace(v, :has_unit, :unit_id)
+        v = Enums.map_key_replace(v, :has_unit, :unit_id)
         # no idea why the numerical value isn't auto converted
         Map.put(acc, k, v)
       else

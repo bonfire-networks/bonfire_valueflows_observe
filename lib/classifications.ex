@@ -1,7 +1,7 @@
 defmodule ValueFlows.Observe.Classifications do
   alias Bonfire.Classify.Categories
   import Bonfire.Common.Config, only: [repo: 0]
-  use Bonfire.Common.Utils, only: [maybe_put: 3]
+  use Bonfire.Common.Utils
   alias Bonfire.Common.Utils
 
   def one(filters) do
@@ -13,7 +13,7 @@ defmodule ValueFlows.Observe.Classifications do
       user,
       attrs
       |> to_classification(facet)
-      |> maybe_put(:extra_info, extra_info)
+      |> Enums.maybe_put(:extra_info, extra_info)
       # |> IO.inspect
     )
     |> from_classification()
@@ -34,9 +34,9 @@ defmodule ValueFlows.Observe.Classifications do
 
   def to_classification(attrs, facet \\ nil) do
     attrs
-    |> maybe_put(:name, Map.get(attrs, :label))
-    |> maybe_put(:summary, Map.get(attrs, :note))
-    |> maybe_put(:facet, facet)
+    |> Enums.maybe_put(:name, Map.get(attrs, :label))
+    |> Enums.maybe_put(:summary, Map.get(attrs, :note))
+    |> Enums.maybe_put(:facet, facet)
   end
 
   def from_classification({_ = ret, %{} = attrs}) do
@@ -47,8 +47,8 @@ defmodule ValueFlows.Observe.Classifications do
     attrs = flatten(attrs)
 
     attrs
-    |> maybe_put(:label, Map.get(attrs, :name))
-    |> maybe_put(:note, Map.get(attrs, :summary))
+    |> Enums.maybe_put(:label, Map.get(attrs, :name))
+    |> Enums.maybe_put(:note, Map.get(attrs, :summary))
 
     # |> IO.inspect
   end
