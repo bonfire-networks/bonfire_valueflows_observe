@@ -26,7 +26,7 @@ if Code.ensure_loaded?(Bonfire.API.GraphQL) do
     def delete_observable_property(%{id: id}, info) do
       with {:ok, user} <- GraphQL.current_user_or_not_logged_in(info),
            {:ok, observable_property} <-
-             Bonfire.Classify.Categories.one(id: id),
+             Bonfire.Classify.Categories.one(id: id, current_user: user),
            # TODO: check permissions
            {:ok, _} <-
              Bonfire.Classify.Categories.soft_delete(observable_property) do

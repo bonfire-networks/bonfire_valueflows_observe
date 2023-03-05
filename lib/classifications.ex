@@ -4,8 +4,8 @@ defmodule ValueFlows.Observe.Classifications do
   use Bonfire.Common.Utils
   alias Bonfire.Common.Utils
 
-  def one(filters) do
-    Categories.one(filters) |> from_classification()
+  def one(filters, opts \\ []) do
+    Categories.one(filters, opts) |> from_classification()
   end
 
   def create(user, attrs, facet, extra_info \\ nil) do
@@ -26,7 +26,7 @@ defmodule ValueFlows.Observe.Classifications do
   end
 
   def update(user, id, attrs, facet) when is_binary(id) do
-    with {:ok, obj} <- Bonfire.Classify.Categories.one(id: id) do
+    with {:ok, obj} <- Bonfire.Classify.Categories.one(id: id, current_user: user) do
       Categories.update(user, obj, to_classification(attrs, facet))
       |> from_classification()
     end
