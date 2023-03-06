@@ -81,7 +81,7 @@ if Code.ensure_loaded?(Bonfire.API.GraphQL) do
 
     # without pagination
     # def all_observable_phenomenons(%{}, info) do
-    #   {:ok, Bonfire.Classify.Categories.many()}
+    #   {:ok, Bonfire.Classify.Categories.list()}
     # end
 
     def get(%{id: id}, _info) do
