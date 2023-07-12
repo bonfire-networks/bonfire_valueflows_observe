@@ -96,7 +96,7 @@ if Code.ensure_loaded?(Bonfire.API.GraphQL) do
 
     def has_result_edge(thing, _, _) do
       has_result_edge(
-        repo.preload(thing, [:result_measure, :result_phenomenon]),
+        repo().preload(thing, [:result_measure, :result_phenomenon]),
         nil,
         nil
       )
