@@ -1,6 +1,5 @@
 bonfire_valueflows_api_schema = "https://github.com/bonfire-networks/bonfire_valueflows_api_schema#main"
 bonfire_common = "https://github.com/bonfire-networks/bonfire_common#main"
 # bonfire_web_phoenix = "https://github.com/bonfire-networks/bonfire_web_phoenix#main"
-pointers = "https://github.com/bonfire-networks/pointers#main"
 bonfire_valueflows = "https://github.com/bonfire-networks/bonfire_valueflows#main"
 bonfire_classify = "https://github.com/bonfire-networks/bonfire_classify#main"

@@ -1,5 +1,5 @@
 defmodule ValueFlows.Observe.Observation do
-  use Pointers.Pointable,
+  use Needle.Pointable,
     otp_app: :bonfire_valueflows_observe,
     source: "vf_observe_observation",
     table_id: "0BSERVEDPHEN0MEN0N0RMEASVR"
@@ -25,7 +25,7 @@ defmodule ValueFlows.Observe.Observation do
     belongs_to(:provider, @user)
 
     # agent or `EconomicResource` or `ResourceSpecification`
-    belongs_to(:made_by_sensor, Pointers.Pointer)
+    belongs_to(:made_by_sensor, Needle.Pointer)
 
     belongs_to(:made_by_agent, @user,
       foreign_key: :made_by_sensor_id,
@@ -43,7 +43,7 @@ defmodule ValueFlows.Observe.Observation do
     )
 
     # EconomicResource or Agent
-    belongs_to(:has_feature_of_interest, Pointers.Pointer)
+    belongs_to(:has_feature_of_interest, Needle.Pointer)
 
     belongs_to(:has_observed_resource, EconomicResource,
       foreign_key: :has_feature_of_interest_id,
@@ -57,7 +57,7 @@ defmodule ValueFlows.Observe.Observation do
 
     belongs_to(:observed_property, Bonfire.Classify.Category)
 
-    belongs_to(:has_result, Pointers.Pointer)
+    belongs_to(:has_result, Needle.Pointer)
 
     belongs_to(:result_measure, Bonfire.Quantify.Measure,
       on_replace: :nilify,
@@ -75,7 +75,7 @@ defmodule ValueFlows.Observe.Observation do
 
     belongs_to(:at_location, Bonfire.Geolocate.Geolocation)
 
-    belongs_to(:context, Pointers.Pointer)
+    belongs_to(:context, Needle.Pointer)
 
     belongs_to(:creator, @user)
 

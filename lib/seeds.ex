@@ -27,7 +27,7 @@ defmodule ValueFlows.Observe.Seeds do
     debug("Un-seeding valueflows_observe")
 
     # id = ObservableProperties.id()
-    # from(x in Pointers.Pointer, where: x.id == ^id) |> repo().delete_all
+    # from(x in Needle.Pointer, where: x.id == ^id) |> repo().delete_all
     # Bonfire.Classify.Categories.soft_delete(ObservableProperties.facet())
 
     with {:ok, c} <-

@@ -33,7 +33,7 @@ defmodule ValueFlows.Observe.ObservationsGraphQLTest do
       user = fake_user!()
       q = observation_query()
       conn = user_conn(user)
-      vars = %{id: Pointers.ULID.generate()}
+      vars = %{id: Needle.ULID.generate()}
       assert [%{"status" => 404}] = grumble_post_errors(q, conn, vars)
     end
   end

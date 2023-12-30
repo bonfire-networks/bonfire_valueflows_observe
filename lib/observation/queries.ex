@@ -239,7 +239,7 @@ defmodule ValueFlows.Observe.Observation.Queries do
     |> group_by([observation: c], c.id)
     |> having(
       [observation: c, tags: t],
-      fragment("? <@ array_agg(?)", type(^ids, {:array, Pointers.ULID}), t.id)
+      fragment("? <@ array_agg(?)", type(^ids, {:array, Needle.ULID}), t.id)
     )
   end
 
