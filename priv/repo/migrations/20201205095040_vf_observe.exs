@@ -2,8 +2,11 @@ defmodule Bonfire.Repo.Migrations.ImportObserve do
   @moduledoc false
   use Ecto.Migration
 
-  def change do
-    ValueFlows.Observe.Migrations.change()
-    ValueFlows.Observe.Migrations.change_observable_phenomenon()
+  def up do
+    ValueFlows.Observe.Migrations.up()
+  end
+
+  def down do
+    ValueFlows.Observe.Migrations.down()
   end
 end
