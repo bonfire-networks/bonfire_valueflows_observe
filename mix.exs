@@ -28,11 +28,11 @@ defmodule ValueFlows.Observe.MixProject do
           {:floki, ">= 0.0.0", only: [:dev, :test]},
           {:bonfire_api_graphql,
            git: "https://github.com/bonfire-networks/bonfire_api_graphql",
-           branch: "main",
+           
            optional: true, runtime: false},
           {:bonfire_me,
            git: "https://github.com/bonfire-networks/bonfire_me",
-           branch: "main",
+           
            optional: true, runtime: false}
         ])
     ]
