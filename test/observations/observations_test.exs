@@ -37,7 +37,7 @@ defmodule ValueFlows.Observe.ObservationsTest do
     end
 
     test "returns NotFound if item is missing" do
-      assert {:error, :not_found} = Observations.one(id: ulid())
+      assert {:error, :not_found} = Observations.one(id: uid())
     end
 
     test "returns NotFound if item is deleted" do
