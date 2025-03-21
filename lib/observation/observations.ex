@@ -147,7 +147,7 @@ defmodule ValueFlows.Observe.Observations do
            {:ok, activity} <-
              ValueFlows.Util.publish(creator, :observe, observation, attrs: attrs) do
         indexing_object_format(observation)
-        |> ValueFlows.Util.index_for_search()
+        |> ValueFlows.Util.index_for_search(creator)
 
         {:ok, observation}
       end
