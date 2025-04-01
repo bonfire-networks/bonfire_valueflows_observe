@@ -1,6 +1,6 @@
 # # SPDX-License-Identifier: AGPL-3.0-only
 defmodule ValueFlows.Observe.PropertiesTest do
-  use ValueFlows.Observe.ConnCase, async: true
+  use ValueFlows.Observe.DataCase, async: true
 
   # import CommonsPub.Utils.Trendy
   import Bonfire.Common.Simulation

@@ -1,6 +1,6 @@
 # SPDX-License-Identifier: AGPL-3.0-only
 defmodule ValueFlows.Observe.Phenomenons.GraphQLTest do
-  use ValueFlows.Observe.ConnCase, async: true
+  use ValueFlows.Observe.DataCase, async: true
 
   import Bonfire.Common.Simulation
   import ValueFlows.Observe.Simulate

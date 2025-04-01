@@ -34,6 +34,8 @@ defmodule ValueFlows.Observe.ConnCase do
 
       # The default endpoint for testing
       @endpoint ValueFlows.Observe.Web.Endpoint
+
+      @moduletag :ui
     end
   end
 
