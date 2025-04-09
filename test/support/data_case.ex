@@ -24,6 +24,8 @@ defmodule ValueFlows.Observe.DataCase do
 
       Bonfire.Common.Extend.quoted_import_if_enabled(Bonfire.Me.Fake)
       # import ValueFlows.Observe.DataCase
+
+      @moduletag :backend
     end
   end
 
