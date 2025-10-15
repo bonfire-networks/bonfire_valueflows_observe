@@ -18,24 +18,18 @@ defmodule ValueFlows.Observe.Migrations do
 
       add(:result_time, :timestamptz)
 
-      add(:provider_id, weak_pointer(), null: true)
-
-      add(:made_by_sensor_id, weak_pointer(), null: true)
-
-      add(:has_feature_of_interest_id, weak_pointer(), null: false)
-
-      add(:observed_property_id, weak_pointer(), null: false)
-
-      add(:has_result_id, weak_pointer(), null: false)
-
-      add(:observed_during_id, weak_pointer(Process), null: true)
-
-      add(:at_location_id, weak_pointer(Bonfire.Geolocate.Geolocation), null: true)
+      add_pointer(:provider_id, :weak, Needle.Pointer, null: true)
+      add_pointer(:made_by_sensor_id, :weak, Needle.Pointer, null: true)
+      add_pointer(:has_feature_of_interest_id, :weak, Needle.Pointer, null: false)
+      add_pointer(:observed_property_id, :weak, Needle.Pointer, null: false)
+      add_pointer(:has_result_id, :weak, Needle.Pointer, null: false)
+      add_pointer(:observed_during_id, :weak, Process, null: true)
+      add_pointer(:at_location_id, :weak, Bonfire.Geolocate.Geolocation, null: true)
 
       # optional context as in_scope_of
-      add(:context_id, weak_pointer(), null: true)
+      add_pointer(:context_id, :weak, Needle.Pointer, null: true)
 
-      add(:creator_id, weak_pointer(ValueFlows.Util.user_schema()), null: true)
+      add_pointer(:creator_id, :weak, ValueFlows.Util.user_schema(), null: true)
 
       add(:published_at, :timestamptz)
       add(:deleted_at, :timestamptz)
