@@ -22,9 +22,9 @@ if Code.ensure_loaded?(Bonfire.API.GraphQL) do
         ],
         observation: %{
           # FIXME
-          # canonical_url: [
-          #   resolve: &CommonsPub.Characters.GraphQL.Resolver.canonical_url_edge/3
-          # ],
+          canonical_url: [
+            resolve: &Bonfire.API.GraphQL.CommonResolver.canonical_url_edge/3
+          ],
           # in_scope_of: [
           #   resolve: &CommonResolver.context_edge/3
           # ]
