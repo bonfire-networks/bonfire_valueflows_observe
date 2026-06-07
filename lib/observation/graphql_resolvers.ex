@@ -80,7 +80,7 @@ if Code.ensure_loaded?(Bonfire.API.GraphQL) do
           :default,
           user: GraphQL.current_user(info)
         ],
-        data_filters: ValueFlows.Util.GraphQL.fetch_data_filters(info)
+        data_filters: Bonfire.API.GraphQL.fetch_data_filters(info)
       })
     end
 
@@ -163,7 +163,7 @@ if Code.ensure_loaded?(Bonfire.API.GraphQL) do
     def create_observation(%{observation: observation_attrs} = params, info) do
       repo().transact_with(fn ->
         with {:ok, user} <- GraphQL.current_user_or_not_logged_in(info),
-             #  {:ok, uploads} <- ValueFlows.Util.GraphQL.maybe_upload(user, observation_attrs, info),
+             #  {:ok, uploads} <- Bonfire.API.GraphQL.CommonResolver.maybe_upload(user, observation_attrs, info),
              observation_attrs = Map.merge(observation_attrs, %{is_public: true}),
              #  |> Map.merge(uploads),
              {:ok, observation} <- Observations.create(user, observation_attrs) do
@@ -176,7 +176,7 @@ if Code.ensure_loaded?(Bonfire.API.GraphQL) do
       with {:ok, user} <- GraphQL.current_user_or_not_logged_in(info),
            {:ok, observation} <- observation(%{id: id}, info),
            :ok <- ValueFlows.Util.can?(user, observation),
-           #  {:ok, uploads} <- ValueFlows.Util.GraphQL.maybe_upload(user, changes, info),
+           #  {:ok, uploads} <- Bonfire.API.GraphQL.CommonResolver.maybe_upload(user, changes, info),
            #  changes = Map.merge(changes, uploads),
            {:ok, observation} <- Observations.update(user, observation, changes) do
         {:ok, observation}
